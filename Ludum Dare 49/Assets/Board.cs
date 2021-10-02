@@ -356,13 +356,14 @@ public class Board : MonoBehaviour
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
-            ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
-
             Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
             rb.velocity = new Vector3();
             rb.isKinematic = true;
             rb.useGravity = false;
             rb.freezeRotation = true;
+
+            ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
+            ObjectGrid[position.x][position.y].Item2.transform.rotation = new Quaternion(0, 0, 0, 0);
 
             TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
             ObjectGrid[position.x].Remove(position.y);

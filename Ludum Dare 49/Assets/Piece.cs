@@ -42,7 +42,7 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
-        if (Board.GameActive)
+        if (Board.GameActive && !Board.MainMenuUI.activeSelf)
         {
             Board.Clear(this);
             lockTime += Time.deltaTime;
