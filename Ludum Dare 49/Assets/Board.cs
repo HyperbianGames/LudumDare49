@@ -14,6 +14,8 @@ public class Board : MonoBehaviour
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
     public Vector3Int SpawnPosition;
+    public Vector2 BoardWeight = new Vector2();
+    public float failMod;
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
@@ -58,6 +60,44 @@ public class Board : MonoBehaviour
         TetrominoData data = tetrominoes[random];
         ActivePiece.Initialize(this, SpawnPosition, data);
         Set(ActivePiece);
+    }
+
+    public void CalculateBoardWeight(Piece piece)
+    {
+        BoardWeight = new Vector2(15, 15);
+        for (int x = GridSize.x; x > 0; x--)
+        {
+            for (int y = GridSize.y; y > 0; y--)
+            {
+                Vector3Int position = new Vector3Int(x, y, SpawnPosition.z);
+                if (!piece.HasTile(position) & HasTile(position))
+                {
+                    if  (GridSize.x % 2 == 0)
+                    {
+                        if (x > GridSize.x / 2)
+                        {
+                            BoardWeight.y += 1;
+                        }
+                        else
+                        {
+                            BoardWeight.x += 1;
+                        }
+                    }
+                    else
+                    {
+                        // Other logic needed
+                        Debug.Log("LOGICNEEDED");
+                    }                    
+                }    
+            }
+        }
+
+        Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
+
+        if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
+        {
+            Debug.Log("YOU LOSE YOU LOSE YOU LOSE");
+        }
     }
 
     public void Set(Piece piece)

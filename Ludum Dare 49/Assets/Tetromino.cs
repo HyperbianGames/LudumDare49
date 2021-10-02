@@ -23,7 +23,6 @@ public class TetrominoData
     {
         this.Cells = GameData.Cells[this.Tetromino];
         this.WallKicks = GameData.WallKicks[this.Tetromino];
-        Debug.Log("???");
     }
 
 }

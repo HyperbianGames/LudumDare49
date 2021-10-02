@@ -27,8 +27,17 @@ public class Piece : MonoBehaviour
         {
             Cells[i] = (Vector3Int)data.Cells[i];
         }
+    }
 
+    public bool HasTile(Vector3Int position)
+    {
+        for (int i = 0; i < Cells.Length; i++)
+        {
+            if (Cells[i] + Position == position)
+                return true;
+        }
 
+        return false;
     }
 
     private void Update()
@@ -68,6 +77,7 @@ public class Piece : MonoBehaviour
         }
 
         Board.Set(this);
+        Board.CalculateBoardWeight(this);
     }
 
     private void Step()
