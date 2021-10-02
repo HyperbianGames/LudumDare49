@@ -3,6 +3,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class PlatformRotationData
+{
+    public float Goal = 0f;
+    public int PassedGoalCount = 0;
+    public float PassGoalMod = 0f;
+    public bool DirectionGoingPositive = false;
+    public float Speed = 1f;
+    public int MaxWobbles = 2;
+
+    public void SetMod()
+    {
+        switch (PassedGoalCount)
+        {
+            case 0:
+                PassGoalMod = 1.3f;
+                break;
+            case 1:
+                PassGoalMod = 1.3f;
+                break;
+            case 2:
+                PassGoalMod = 1.15f;
+                break;
+            default:
+                PassGoalMod = 1;
+                break;
+        }
+    }
+}
+
 public class Board : MonoBehaviour
 {
     public TetrominoData[] tetrominoes;
@@ -11,17 +40,26 @@ public class Board : MonoBehaviour
     public bool DrawGameGrid;
     public GameObject GridAnchor;
     public GameObject GridCube;
+    public GameObject Platform;
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
     public Vector3Int SpawnPosition;
     public Vector2 BoardWeight = new Vector2();
     public float failMod;
+    private Vector3 gridOffsetFromCenter = new Vector3();
+    public GameObject MainMenuUI;
+    public GameObject GameOverUI;
+    public bool GameActive = false;
+    public float GameEndTime { get; set; } = 0;
+    public float GameEndTimePopup;
+    private PlatformRotationData rotationData;
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
     private void Awake()
     {
         ActivePiece = GetComponentInChildren<Piece>();
+
 
         foreach (TetrominoData data in tetrominoes)
         {
@@ -35,6 +73,15 @@ public class Board : MonoBehaviour
 
         }
 
+        if (GridSize.x % 2 == 0)
+        {
+            gridOffsetFromCenter = new Vector3(-GridSize.x / 2, 0, 0);
+        }
+        else
+        {
+            gridOffsetFromCenter = new Vector3(-(GridSize.x / 2) - 0.5f, 0, 0);
+        }
+
         if (DrawGameGrid)
         {
             DrawGrid();
@@ -46,11 +93,15 @@ public class Board : MonoBehaviour
             ObjectGrid.Add(x, new Dictionary<int, Tuple<Tetromino, GameObject>>());
         }
 
-        GameStart();
+        SpawnPiece();
     }
 
-    private void GameStart()
+    public void GameStart()
     {
+        MainMenuUI.SetActive(false);
+        ActivePiece.HardDrop();
+        ResetBoard();
+        GameActive = true;
         SpawnPiece();
     }
 
@@ -59,7 +110,99 @@ public class Board : MonoBehaviour
         int random = UnityEngine.Random.Range(0, tetrominoes.Length);
         TetrominoData data = tetrominoes[random];
         ActivePiece.Initialize(this, SpawnPosition, data);
-        Set(ActivePiece);
+
+        if (IsValidPosition(ActivePiece, SpawnPosition))
+        {
+            Set(ActivePiece);
+        }
+        else
+        {
+            GameOver();
+        }
+    }
+
+    internal void GoToMenu()
+    {
+        GameOverUI.SetActive(false);
+        MainMenuUI.SetActive(true);
+    }
+
+    public void GameOver()
+    {
+        GameEndTime = Time.time;
+        Clear(ActivePiece);
+        for (int x = GridSize.x; x > 0; x--)
+        {
+            for (int y = GridSize.y; y > 0; y--)
+            {
+                ReleaseBlock(new Vector3Int(x, y, SpawnPosition.z));
+            }
+        }
+
+        GameActive = false;
+    }
+
+    public void ResetBoard()
+    {
+        for (int x = GridSize.x; x > 0; x--)
+        {
+            for (int y = GridSize.y; y > 0; y--)
+            {
+                ClearBlock(new Vector3Int(x, y, SpawnPosition.z));
+            }
+        }
+    }
+
+    private void Update()
+    {
+        ManagePlatformRotation();
+    }
+
+    private void ManagePlatformRotation()
+    {
+        if (rotationData.Goal != GridAnchor.transform.rotation.z * Mathf.Rad2Deg)
+        {
+            if (rotationData.Goal >= 0)
+            {
+                if (rotationData.DirectionGoingPositive)
+                {
+                    Debug.Log("GOING POSITIVE - 1");
+                    GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal * rotationData.PassGoalMod)
+                    {
+                        rotationData.PassedGoalCount += 1;
+                        rotationData.DirectionGoingPositive = false;
+                        rotationData.SetMod();
+                    }
+                }
+                else
+                {
+                    Debug.Log("GOING Negative - 1");
+                    GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal * rotationData.PassGoalMod)
+                    {
+                        rotationData.PassedGoalCount += 1;
+                        rotationData.DirectionGoingPositive = true;
+                        rotationData.SetMod();
+
+                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+                        {
+                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+                        }
+                    }
+                }
+               
+
+            }
+        }
+        
+        //else if (rotationData.Goal <= 0 && GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal)
+        //{
+        //    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal}");
+        //    GridAnchor.transform.Rotate(0.0f, 0.0f, -0.5f, Space.Self);
+        //}
     }
 
     public void CalculateBoardWeight(Piece piece)
@@ -72,7 +215,7 @@ public class Board : MonoBehaviour
                 Vector3Int position = new Vector3Int(x, y, SpawnPosition.z);
                 if (!piece.HasTile(position) & HasTile(position))
                 {
-                    if  (GridSize.x % 2 == 0)
+                    if (GridSize.x % 2 == 0)
                     {
                         if (x > GridSize.x / 2)
                         {
@@ -87,16 +230,33 @@ public class Board : MonoBehaviour
                     {
                         // Other logic needed
                         Debug.Log("LOGICNEEDED");
-                    }                    
-                }    
+                    }
+                }
             }
         }
+        float goal = 0.0f;
+        //Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
+        if (BoardWeight.x > BoardWeight.y)
+        {
+            goal = 2.5f;
+        }
+        else if (BoardWeight.x < BoardWeight.y)
+        {
+            goal = -2.5f;
+        }
 
-        Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
+        rotationData = new PlatformRotationData
+        {
+            Goal = goal,
+            DirectionGoingPositive = goal >= 0 && GridAnchor.transform.rotation.z * Mathf.Rad2Deg < goal,
+        };
+
+        rotationData.SetMod();
+
 
         if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
         {
-            Debug.Log("YOU LOSE YOU LOSE YOU LOSE");
+            GameOver();
         }
     }
 
@@ -114,33 +274,59 @@ public class Board : MonoBehaviour
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
-            ObjectGrid[position.x][position.y].Item2.transform.position = poolObjectLocation;
+            ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
             TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
             ObjectGrid[position.x].Remove(position.y);
         }
 
         GameObject newBlock = TetrominoPool[tetrimino].Peek();
+        Rigidbody rb = newBlock.GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.freezeRotation = true;
         TetrominoPool[tetrimino].Dequeue();
         ObjectGrid[position.x].Add(position.y, new Tuple<Tetromino, GameObject>(tetrimino, newBlock));
-        newBlock.transform.position = position;
+
+        newBlock.transform.localPosition = position + gridOffsetFromCenter;
     }
 
     public void ClearBlock(Vector3Int position)
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
-            ObjectGrid[position.x][position.y].Item2.transform.position = poolObjectLocation;
+            ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
+
+            Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+
             TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
             ObjectGrid[position.x].Remove(position.y);
         }
     }
+
+    public void ReleaseBlock(Vector3Int position)
+    {
+        if (ObjectGrid[position.x].ContainsKey(position.y))
+        {
+            //ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
+            //TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
+            //ObjectGrid[position.x].Remove(position.y);
+
+            Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
+            rb.isKinematic = false;
+            rb.useGravity = true;
+        }
+    }
+
 
     public void MoveBlockDown(Vector3Int position)
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
             Tuple<Tetromino, GameObject> block = ObjectGrid[position.x][position.y];
-            Vector3Int newPos = new Vector3Int(position.x, position.y-1, SpawnPosition.z);
+            Vector3Int newPos = new Vector3Int(position.x, position.y - 1, SpawnPosition.z);
             ClearBlock(position);
             SetBlock(newPos, block.Item1);
         }
@@ -167,7 +353,11 @@ public class Board : MonoBehaviour
         {
             for (int y = GridSize.y; y > 0; y--)
             {
-                Instantiate(GridCube, new Vector3 { x = x, y = y, z = -1 }, GridAnchor.transform.rotation, GridAnchor.transform);
+                if (GridSize.x % 2 == 0)
+                {
+                    Instantiate(GridCube, new Vector3 { x = x, y = y, z = -1 } + gridOffsetFromCenter, GridAnchor.transform.rotation, GridAnchor.transform);
+                }
+
             }
         }
     }

@@ -42,42 +42,56 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
-        Board.Clear(this);
-        lockTime += Time.deltaTime;
+        if (Board.GameActive)
+        {
+            Board.Clear(this);
+            lockTime += Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Rotate(-1);
-        }
-        else if (Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl))
-        {
-            Rotate(1);
-        }
+            if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Rotate(-1);
+            }
+            else if (Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                Rotate(1);
+            }
 
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            Move(Vector2Int.left);
-        }
-        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            Move(Vector2Int.right);
-        }
-        else if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            HardDrop();
-        }
-        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            Move(Vector2Int.down);
-        }
+            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                Move(Vector2Int.left);
+            }
+            else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                Move(Vector2Int.right);
+            }
+            else if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                HardDrop();
+            }
+            else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                Move(Vector2Int.down);
+            }
 
-        if (Time.time >= stepTime)
-        {
-            Step();
-        }
+            if (Time.time >= stepTime)
+            {
+                Step();
+            }
 
-        Board.Set(this);
-        Board.CalculateBoardWeight(this);
+            Board.Set(this);
+        }
+        else
+        {
+            if (!Board.MainMenuUI.activeSelf && Board.GameEndTime + Board.GameEndTimePopup < Time.time)
+            {
+                Board.GameOverUI.SetActive(true);
+
+                if (Input.anyKey)
+                {
+                    Board.GoToMenu();
+                }
+            }
+        }
     }
 
     private void Step()
@@ -96,6 +110,7 @@ public class Piece : MonoBehaviour
         Board.Set(this);
         Board.ClearLines();
         Board.SpawnPiece();
+        Board.CalculateBoardWeight(this);
     }
 
     private void Rotate(int direction)
@@ -174,7 +189,7 @@ public class Piece : MonoBehaviour
         }
     }
 
-    private void HardDrop()
+    public void HardDrop()
     {
         while (Move(Vector2Int.down))
         {

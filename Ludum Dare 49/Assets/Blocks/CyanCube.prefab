@@ -16,6 +16,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2913450069349818064, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913450069349818064, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913450069349818064, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913450069349818064, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.127
       objectReference: {fileID: 0}
@@ -57,7 +69,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3136137293931403855, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
       propertyPath: m_Name
-      value: Cube
+      value: CyanCube
+      objectReference: {fileID: 0}
+    - target: {fileID: 7905531913326829459, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7905531913326829459, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5a6df6ed3992254fa0dc0b53645fbb2, type: 3}
