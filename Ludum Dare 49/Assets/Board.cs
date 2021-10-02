@@ -5,28 +5,33 @@ using UnityEngine;
 
 public class PlatformRotationData
 {
+    public bool Moving = false;
     public float Goal = 0f;
     public int PassedGoalCount = 0;
     public float PassGoalMod = 0f;
     public bool DirectionGoingPositive = false;
-    public float Speed = 1f;
-    public int MaxWobbles = 2;
+    public float Speed = 2f;
+    public int MaxWobbles = 4;
 
     public void SetMod()
     {
         switch (PassedGoalCount)
         {
             case 0:
-                PassGoalMod = 1.3f;
+                Speed = 10f;
+                PassGoalMod = 1.1f;
                 break;
             case 1:
-                PassGoalMod = 1.3f;
+                Speed = 8f;
+                PassGoalMod = 1.05f;
                 break;
             case 2:
-                PassGoalMod = 1.15f;
+                Speed = 4f;
+                PassGoalMod = 1.025f;
                 break;
             default:
-                PassGoalMod = 1;
+                Speed = 2f;
+                PassGoalMod = 1.1f;
                 break;
         }
     }
@@ -52,7 +57,7 @@ public class Board : MonoBehaviour
     public bool GameActive = false;
     public float GameEndTime { get; set; } = 0;
     public float GameEndTimePopup;
-    private PlatformRotationData rotationData;
+    private PlatformRotationData rotationData = new PlatformRotationData();
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
@@ -100,6 +105,8 @@ public class Board : MonoBehaviour
     {
         MainMenuUI.SetActive(false);
         ActivePiece.HardDrop();
+        Platform.transform.rotation = new Quaternion(0, 0, 0, 0);
+        rotationData = new PlatformRotationData();
         ResetBoard();
         GameActive = true;
         SpawnPiece();
@@ -129,6 +136,7 @@ public class Board : MonoBehaviour
 
     public void GameOver()
     {
+        rotationData.Moving = false;
         GameEndTime = Time.time;
         Clear(ActivePiece);
         for (int x = GridSize.x; x > 0; x--)
@@ -160,7 +168,7 @@ public class Board : MonoBehaviour
 
     private void ManagePlatformRotation()
     {
-        if (rotationData.Goal != GridAnchor.transform.rotation.z * Mathf.Rad2Deg)
+        if (rotationData.Moving)
         {
             if (rotationData.Goal >= 0)
             {
@@ -174,6 +182,12 @@ public class Board : MonoBehaviour
                         rotationData.PassedGoalCount += 1;
                         rotationData.DirectionGoingPositive = false;
                         rotationData.SetMod();
+                    }
+
+                    if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+                    {
+                        rotationData.Moving = false;
+                        GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
                     }
                 }
                 else
@@ -189,12 +203,57 @@ public class Board : MonoBehaviour
 
                         if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
                         {
+                            rotationData.Moving = false;
                             GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
                         }
                     }
                 }
                
 
+            }
+            else
+            {
+                if (rotationData.Goal < 0)
+                {
+                    if (rotationData.DirectionGoingPositive)
+                    {
+                        Debug.Log("GOING POSITIVE - 2");
+                        GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal / rotationData.PassGoalMod)
+                        {
+                            rotationData.PassedGoalCount += 1;
+                            rotationData.DirectionGoingPositive = false;
+                            rotationData.SetMod();
+                        }
+
+                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+                        {
+                            rotationData.Moving = false;
+                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("GOING Negative - 2");
+                        GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal / rotationData.PassGoalMod)
+                        {
+                            rotationData.PassedGoalCount += 1;
+                            rotationData.DirectionGoingPositive = true;
+                            rotationData.SetMod();
+
+                            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+                            {
+                                rotationData.Moving = false;
+                                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+                            }
+                        }
+                    }
+
+
+                }
             }
         }
         
@@ -238,18 +297,20 @@ public class Board : MonoBehaviour
         //Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
         if (BoardWeight.x > BoardWeight.y)
         {
-            goal = 2.5f;
+            goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 1.1f;
+            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
         }
         else if (BoardWeight.x < BoardWeight.y)
         {
-            goal = -2.5f;
+            goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -1.1f;
+
+            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
         }
 
-        rotationData = new PlatformRotationData
-        {
-            Goal = goal,
-            DirectionGoingPositive = goal >= 0 && GridAnchor.transform.rotation.z * Mathf.Rad2Deg < goal,
-        };
+        rotationData.Goal = goal;
+        rotationData.Moving = true;
+        rotationData.PassedGoalCount = 0;
+        
 
         rotationData.SetMod();
 
@@ -284,6 +345,7 @@ public class Board : MonoBehaviour
         rb.isKinematic = true;
         rb.useGravity = false;
         rb.freezeRotation = true;
+        rb.velocity = new Vector3();
         TetrominoPool[tetrimino].Dequeue();
         ObjectGrid[position.x].Add(position.y, new Tuple<Tetromino, GameObject>(tetrimino, newBlock));
 
@@ -297,6 +359,7 @@ public class Board : MonoBehaviour
             ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
 
             Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
+            rb.velocity = new Vector3();
             rb.isKinematic = true;
             rb.useGravity = false;
             rb.freezeRotation = true;
@@ -315,8 +378,10 @@ public class Board : MonoBehaviour
             //ObjectGrid[position.x].Remove(position.y);
 
             Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
+            rb.velocity = new Vector3();
             rb.isKinematic = false;
             rb.useGravity = true;
+            rb.freezeRotation = false;
         }
     }
 
