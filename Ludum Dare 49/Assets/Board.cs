@@ -62,10 +62,12 @@ public class Board : MonoBehaviour
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
+    public Dictionary<int, int> WeightMods { get; set; } = new Dictionary<int, int>();
+
     private void Awake()
     {
         ActivePiece = GetComponentInChildren<Piece>();
-
+        GenerateWeightMods();
 
         foreach (TetrominoData data in tetrominoes)
         {
@@ -100,6 +102,17 @@ public class Board : MonoBehaviour
         }
 
         SpawnPiece();
+    }
+
+    public void GenerateWeightMods()
+    {
+        int columsPerSide = (int)Mathf.Floor(GridSize.x / 2);
+        int midColumn = 0;
+
+        if (columsPerSide % 2 != 0)
+        {
+            midColumn = columsPerSide + 1;
+        }
     }
 
     public void GameStart()
