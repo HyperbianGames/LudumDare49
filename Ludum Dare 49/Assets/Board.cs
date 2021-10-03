@@ -369,8 +369,8 @@ public class Board : MonoBehaviour
             }
         }
 
-        int maxDifference = (int)(BoardWeight.x + BoardWeight.y / 5);
-        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 2;
+        int maxDifference = Mathf.Clamp((int)(BoardWeight.x + BoardWeight.y / 5), 20, 40);
+        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 3;
         rotationData.Moving = true;
 
         //float goal = 0.0f;
