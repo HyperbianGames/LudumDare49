@@ -215,6 +215,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 135459387389089036}
     - target: {fileID: 7444024855983254277, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
+      propertyPath: GridSize.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7444024855983254277, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelLabel
       value: 
       objectReference: {fileID: 135459387966570647}
