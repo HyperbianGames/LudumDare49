@@ -1868,6 +1868,7 @@ GameObject:
   - component: {fileID: 1907780336}
   - component: {fileID: 1907780337}
   - component: {fileID: 1907780338}
+  - component: {fileID: 1907780339}
   - component: {fileID: 1907780340}
   m_Layer: 0
   m_Name: Game
@@ -1946,6 +1947,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepDelay: 1
   lockDelay: 0.5
+--- !u!114 &1907780339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907780335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5767e33e5226b6b4cb0c71ea196f957a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1907780340
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ public class PlatformRotationData
     public bool DirectionGoingPositive = false;
     public float Speed = 2f;
     public int MaxWobbles = 4;
+    public int MaxWeightDifference = 0;
 
     public void SetMod()
     {
@@ -145,9 +146,40 @@ public class Board : MonoBehaviour
         SoundDesign.PlayOptionSelected();
     }
 
+    public Queue<Tetromino> DrawList { get; set; } = new Queue<Tetromino>();
+
+    public void ShuffleList()
+    {
+        List<Tetromino> tetrominos = new List<Tetromino>();
+
+        for(int i = 0; i < tetrominoes.Length - 1; i++)
+        {
+            tetrominos.Add((Tetromino)i);
+            tetrominos.Add((Tetromino)i);
+        }
+
+        System.Random rand = new System.Random();
+        while (tetrominos.Count > 0)
+        {
+            int index = rand.Next(tetrominos.Count);
+            DrawList.Enqueue(tetrominos[index]);
+            tetrominos.RemoveAt(index);
+        }
+    }
+
+    public Tetromino GetNextPiece()
+    {
+        if (DrawList.Count == 0)
+            ShuffleList();
+
+        Tetromino nextPiece = DrawList.Peek();
+        DrawList.Dequeue();
+        return nextPiece;
+    }
+
     public void SpawnPiece()
     {
-        int random = UnityEngine.Random.Range(0, tetrominoes.Length);
+        int random = (int)GetNextPiece();
         TetrominoData data = tetrominoes[random];
         ActivePiece.Initialize(this, SpawnPosition, data);
 
@@ -418,6 +450,9 @@ public class Board : MonoBehaviour
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
+            if (tetrimino == Tetromino.Ghost)
+                return;
+
             ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
             TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
             ObjectGrid[position.x].Remove(position.y);
@@ -435,10 +470,13 @@ public class Board : MonoBehaviour
         newBlock.transform.localPosition = position + gridOffsetFromCenter;
     }
 
-    public void ClearBlock(Vector3Int position)
+    public void ClearBlock(Vector3Int position, bool isGhost = false)
     {
-        if (ObjectGrid[position.x].ContainsKey(position.y))
+        if (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y))
         {
+            if (isGhost && ObjectGrid[position.x][position.y].Item1 != Tetromino.Ghost)
+                return;
+            
             Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
             rb.velocity = new Vector3();
             rb.isKinematic = true;
@@ -492,7 +530,7 @@ public class Board : MonoBehaviour
 
     public bool HasTile(Vector3Int position)
     {
-        return (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y));
+        return (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y) && ObjectGrid[position.x][position.y].Item1 != Tetromino.Ghost);
     }
 
     public void DrawGrid()
