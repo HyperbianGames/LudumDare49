@@ -97,7 +97,7 @@ public class Piece : MonoBehaviour
     private void Step()
     {
         stepTime = Time.time + stepDelay;
-        Move(Vector2Int.down);
+        Move(Vector2Int.down, true);
         if (lockTime >= lockDelay)
         {
             Lock();
@@ -191,7 +191,7 @@ public class Piece : MonoBehaviour
 
     public void HardDrop()
     {
-        while (Move(Vector2Int.down))
+        while (Move(Vector2Int.down, true))
         {
             continue;
         }
@@ -199,13 +199,17 @@ public class Piece : MonoBehaviour
         Lock();
     }
 
-    private bool Move(Vector2Int translation)
+    private bool Move(Vector2Int translation, bool hardDropOrStep = false)
     {
         Vector3Int newPos = this.Position;
         newPos += (Vector3Int)translation;
         bool valid = Board.IsValidPosition(this, newPos);
         if (valid)
         {
+            if (!hardDropOrStep)
+            {
+                SoundDesigner.Instance.PlayInputEffect();
+            }
             Position = newPos;
             lockTime = 0f;
         }

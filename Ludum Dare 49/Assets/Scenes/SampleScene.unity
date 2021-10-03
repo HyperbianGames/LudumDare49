@@ -123,6 +123,101 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &56828628
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 56828629}
+  - component: {fileID: 56828632}
+  - component: {fileID: 56828631}
+  - component: {fileID: 56828630}
+  m_Layer: 0
+  m_Name: Skull
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &56828629
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56828628}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -2, z: -0.5}
+  m_LocalScale: {x: 1.46, y: 2.25, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1907780336}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &56828630
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56828628}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &56828631
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56828628}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &56828632
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56828628}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &129564833
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,7 +388,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 218419910}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: -0.32, z: -1}
+  m_LocalPosition: {x: 0.5, y: -0.25, z: -0.5}
   m_LocalScale: {x: 10, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1907780336}
@@ -828,6 +923,7 @@ GameObject:
   - component: {fileID: 962100366}
   - component: {fileID: 962100365}
   - component: {fileID: 962100364}
+  - component: {fileID: 962100367}
   m_Layer: 5
   m_Name: Quit Game
   m_TagString: Untagged
@@ -937,6 +1033,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 962100362}
   m_CullTransparentMesh: 1
+--- !u!114 &962100367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962100362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ad404f61e78c646a5a62e4853b2c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1014,7 +1122,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 10, z: -20}
+  m_LocalPosition: {x: 0, y: 10, z: -25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1244,6 +1352,7 @@ GameObject:
   - component: {fileID: 1326817198}
   - component: {fileID: 1326817197}
   - component: {fileID: 1326817196}
+  - component: {fileID: 1326817199}
   m_Layer: 5
   m_Name: Credits
   m_TagString: Untagged
@@ -1353,6 +1462,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1326817194}
   m_CullTransparentMesh: 1
+--- !u!114 &1326817199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1326817194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ad404f61e78c646a5a62e4853b2c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1599250477
 GameObject:
   m_ObjectHideFlags: 0
@@ -1501,6 +1622,7 @@ GameObject:
   - component: {fileID: 1703740210}
   - component: {fileID: 1703740209}
   - component: {fileID: 1703740208}
+  - component: {fileID: 1703740211}
   m_Layer: 5
   m_Name: Start Game
   m_TagString: Untagged
@@ -1622,6 +1744,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1703740206}
   m_CullTransparentMesh: 1
+--- !u!114 &1703740211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703740206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5ad404f61e78c646a5a62e4853b2c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1847530773
 GameObject:
   m_ObjectHideFlags: 0
@@ -1734,6 +1868,7 @@ GameObject:
   - component: {fileID: 1907780336}
   - component: {fileID: 1907780337}
   - component: {fileID: 1907780338}
+  - component: {fileID: 1907780340}
   m_Layer: 0
   m_Name: Game
   m_TagString: Untagged
@@ -1753,6 +1888,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 218419911}
+  - {fileID: 56828629}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1783,10 +1919,11 @@ MonoBehaviour:
     Block: {fileID: 3763278994304717382, guid: 8297e5ffcffcd824c9761cb66f791793, type: 3}
   - Tetromino: 6
     Block: {fileID: 441540645436707692, guid: c1cf9bfba5e076e408bc7742707b3284, type: 3}
-  DrawGameGrid: 0
+  DrawGameGrid: 1
   GridAnchor: {fileID: 1907780335}
   GridCube: {fileID: 2527247784436358495, guid: 169ded0511cd24c4187ac2911e5c0292, type: 3}
   Platform: {fileID: 218419910}
+  SoundDesign: {fileID: 1907780340}
   GridSize: {x: 10, y: 20}
   SpawnPosition: {x: 5, y: 19, z: -1}
   BoardWeight: {x: 0, y: 0}
@@ -1809,3 +1946,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepDelay: 1
   lockDelay: 0.5
+--- !u!114 &1907780340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907780335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3470f98beec6ef4694d355b5bcc31de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainMenuTheme: {fileID: 8300000, guid: f1c4f922159fd1a4084461ccbbdaaa5f, type: 3}
+  YouLoseTheme: {fileID: 8300000, guid: f1c4f922159fd1a4084461ccbbdaaa5f, type: 3}
+  MainMenuItemHovered: {fileID: 8300000, guid: 22d64fae0fffcad47a02f296ee367f00, type: 3}
+  ItemHoveredVolume: 100
+  MainMenuItemSelected: {fileID: 8300000, guid: bb8205cd59af964428f1f2e00e68c000, type: 3}
+  ItemSelectedVolume: 20.4
+  LevelSoundDesigns:
+  - BackgroundMusic: {fileID: 8300000, guid: f1c4f922159fd1a4084461ccbbdaaa5f, type: 3}
+    InputSounds:
+    - EffectSound: {fileID: 8300000, guid: 22d64fae0fffcad47a02f296ee367f00, type: 3}
+      EffectVolumne: 100
+    InputSoundIndex: 0
+    PlayRandomInputSounds: 0
+  CurrentLevelSoundDesign:
+    BackgroundMusic: {fileID: 0}
+    InputSounds: []
+    InputSoundIndex: 0
+    PlayRandomInputSounds: 0
+  MaxGameVolume: 27.1
+  FadeOutDuration: 0.5
+  FadeInDuration: 8

@@ -46,6 +46,7 @@ public class Board : MonoBehaviour
     public GameObject GridAnchor;
     public GameObject GridCube;
     public GameObject Platform;
+    public SoundDesigner SoundDesign;
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
     public Vector3Int SpawnPosition;
@@ -110,6 +111,8 @@ public class Board : MonoBehaviour
         ResetBoard();
         GameActive = true;
         SpawnPiece();
+        SoundDesign.BeingLevelTheme(1);
+        SoundDesign.PlayOptionSelected();
     }
 
     public void SpawnPiece()
@@ -132,6 +135,7 @@ public class Board : MonoBehaviour
     {
         GameOverUI.SetActive(false);
         MainMenuUI.SetActive(true);
+        SoundDesign.BeginMainTheme();
     }
 
     public void GameOver()
@@ -148,6 +152,8 @@ public class Board : MonoBehaviour
         }
 
         GameActive = false;
+        SoundDesign.BeginLoseTheme();
+        SoundDesign.PlayOptionSelected();
     }
 
     public void ResetBoard()
@@ -297,12 +303,12 @@ public class Board : MonoBehaviour
         //Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
         if (BoardWeight.x > BoardWeight.y)
         {
-            goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 1.1f;
+            goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 0.5f;
             rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
         }
         else if (BoardWeight.x < BoardWeight.y)
         {
-            goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -1.1f;
+            goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -0.5f;
 
             rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
         }
