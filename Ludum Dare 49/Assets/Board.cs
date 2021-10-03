@@ -51,6 +51,7 @@ public class Board : MonoBehaviour
     public SoundDesigner SoundDesign;
     public GameObject LevelLabel;
     public GameObject ScoreLable;
+    public int StartingLevel = 1;
 
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
@@ -165,7 +166,7 @@ public class Board : MonoBehaviour
         SpawnPiece();
         SoundDesign.BeingLevelTheme(1);
         SoundDesign.PlayOptionSelected();
-        currentLevel = 1;
+        currentLevel = StartingLevel;
         currentScore = 0;
     }
 
