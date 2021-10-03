@@ -158,7 +158,7 @@ public class Board : MonoBehaviour
     {
         MainMenuUI.SetActive(false);
 //ActivePiece.HardDrop();
-        Platform.transform.rotation = new Quaternion(0, 0, 0, 0);
+        GridAnchor.transform.rotation = new Quaternion(0, 0, 0, 0);
         rotationData = new PlatformRotationData();
         ResetBoard();
         GameActive = true;
@@ -178,7 +178,7 @@ public class Board : MonoBehaviour
         for(int i = 0; i < tetrominoes.Length - 1; i++)
         {
             tetrominos.Add((Tetromino)i);
-            tetrominos.Add((Tetromino)i);
+            //tetrominos.Add((Tetromino)i);
         }
 
         System.Random rand = new System.Random();
@@ -625,6 +625,8 @@ public class Board : MonoBehaviour
                 if (numberOfRowsCleared == 10)
                 {
                     currentLevel++;
+                    SoundDesign.BeingLevelTheme(currentLevel);
+                    numberOfRowsCleared = 0;
                 }
 
                 LineClear(row);

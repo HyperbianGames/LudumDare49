@@ -244,6 +244,7 @@ public class Piece : MonoBehaviour
             continue;
         }
 
+        SoundDesigner.Instance.PlayHardDropEffect(Data.Tetromino);
         Lock();
     }
 
