@@ -108,17 +108,34 @@ public class Board : MonoBehaviour
     {
         int columsPerSide = (int)Mathf.Floor(GridSize.x / 2);
         int midColumn = 0;
+        int columnMod = columsPerSide * -1;
 
-        if (columsPerSide % 2 != 0)
+        if (GridSize.x % 2 != 0)
         {
             midColumn = columsPerSide + 1;
+        }
+
+        for (int col = 1; col <= GridSize.x; col++)
+        {
+            if (midColumn == col)
+            {
+                WeightMods.Add(col, 0);
+            }
+            else
+            {
+                int actualMod = columnMod < 0 ? columnMod * -1 : columnMod;                
+                WeightMods.Add(col, actualMod);
+                columnMod++;
+                if (columnMod == 0)
+                    columnMod++;
+            }
         }
     }
 
     public void GameStart()
     {
         MainMenuUI.SetActive(false);
-        ActivePiece.HardDrop();
+//ActivePiece.HardDrop();
         Platform.transform.rotation = new Quaternion(0, 0, 0, 0);
         rotationData = new PlatformRotationData();
         ResetBoard();
@@ -188,91 +205,113 @@ public class Board : MonoBehaviour
     {
         if (rotationData.Moving)
         {
-            if (rotationData.Goal >= 0)
+            rotationData.Speed = Math.Abs((GridAnchor.transform.rotation.z * Mathf.Rad2Deg) - rotationData.Goal);
+
+
+            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal)
             {
-                if (rotationData.DirectionGoingPositive)
-                {
-                    Debug.Log("GOING POSITIVE - 1");
-                    GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
-                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
-                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal * rotationData.PassGoalMod)
-                    {
-                        rotationData.PassedGoalCount += 1;
-                        rotationData.DirectionGoingPositive = false;
-                        rotationData.SetMod();
-                    }
+                GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
 
-                    if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                    {
-                        rotationData.Moving = false;
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
-                    }
-                }
-                else
+                if (!(GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal))
                 {
-                    Debug.Log("GOING Negative - 1");
-                    GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
-                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
-                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal * rotationData.PassGoalMod)
-                    {
-                        rotationData.PassedGoalCount += 1;
-                        rotationData.DirectionGoingPositive = true;
-                        rotationData.SetMod();
-
-                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                        {
-                            rotationData.Moving = false;
-                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
-                        }
-                    }
+                    rotationData.PassedGoalCount++;
                 }
+            }
+            else if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal)
+            {
+                GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+
+                if (!(GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal))
+                {
+                    rotationData.PassedGoalCount++;
+                }
+            }
+            
+            //if (rotationData.Goal >= 0)
+            //{
+            //    if (rotationData.DirectionGoingPositive)
+            //    {
+            //        Debug.Log("GOING POSITIVE - 1");
+            //        GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+            //        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+            //        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal * rotationData.PassGoalMod)
+            //        {
+            //            rotationData.PassedGoalCount += 1;
+            //            rotationData.DirectionGoingPositive = false;
+            //            rotationData.SetMod();
+            //        }
+
+            //        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //        {
+            //            rotationData.Moving = false;
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        Debug.Log("GOING Negative - 1");
+            //        GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+            //        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+            //        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal * rotationData.PassGoalMod)
+            //        {
+            //            rotationData.PassedGoalCount += 1;
+            //            rotationData.DirectionGoingPositive = true;
+            //            rotationData.SetMod();
+
+            //            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //            {
+            //                rotationData.Moving = false;
+            //                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+            //            }
+            //        }
+            //    }
                
 
-            }
-            else
-            {
-                if (rotationData.Goal < 0)
-                {
-                    if (rotationData.DirectionGoingPositive)
-                    {
-                        Debug.Log("GOING POSITIVE - 2");
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
-                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
-                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal / rotationData.PassGoalMod)
-                        {
-                            rotationData.PassedGoalCount += 1;
-                            rotationData.DirectionGoingPositive = false;
-                            rotationData.SetMod();
-                        }
+            //}
+            //else
+            //{
+            //    if (rotationData.Goal < 0)
+            //    {
+            //        if (rotationData.DirectionGoingPositive)
+            //        {
+            //            Debug.Log("GOING POSITIVE - 2");
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+            //            Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+            //            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal / rotationData.PassGoalMod)
+            //            {
+            //                rotationData.PassedGoalCount += 1;
+            //                rotationData.DirectionGoingPositive = false;
+            //                rotationData.SetMod();
+            //            }
 
-                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                        {
-                            rotationData.Moving = false;
-                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("GOING Negative - 2");
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
-                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
-                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal / rotationData.PassGoalMod)
-                        {
-                            rotationData.PassedGoalCount += 1;
-                            rotationData.DirectionGoingPositive = true;
-                            rotationData.SetMod();
+            //            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //            {
+            //                rotationData.Moving = false;
+            //                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            Debug.Log("GOING Negative - 2");
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+            //            Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+            //            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal / rotationData.PassGoalMod)
+            //            {
+            //                rotationData.PassedGoalCount += 1;
+            //                rotationData.DirectionGoingPositive = true;
+            //                rotationData.SetMod();
 
-                            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                            {
-                                rotationData.Moving = false;
-                                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
-                            }
-                        }
-                    }
+            //                if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //                {
+            //                    rotationData.Moving = false;
+            //                    GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+            //                }
+            //            }
+            //        }
 
 
-                }
-            }
+            //    }
+            //}
         }
         
         //else if (rotationData.Goal <= 0 && GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal)
@@ -284,23 +323,41 @@ public class Board : MonoBehaviour
 
     public void CalculateBoardWeight(Piece piece)
     {
-        BoardWeight = new Vector2(15, 15);
+        BoardWeight = new Vector2(30, 30);
+
         for (int x = GridSize.x; x > 0; x--)
         {
             for (int y = GridSize.y; y > 0; y--)
             {
                 Vector3Int position = new Vector3Int(x, y, SpawnPosition.z);
-                if (!piece.HasTile(position) & HasTile(position))
+                if (HasTile(position) && !piece.HasTile(position))
                 {
                     if (GridSize.x % 2 == 0)
                     {
                         if (x > GridSize.x / 2)
                         {
-                            BoardWeight.y += 1;
+                            try
+                            {
+                                BoardWeight.y += 1 * WeightMods[x];
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Log($"asdfasd {ex.Message}");
+                            }
+
                         }
                         else
                         {
-                            BoardWeight.x += 1;
+
+                            try
+                            {
+                                BoardWeight.x += 1 * WeightMods[x];
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Log($"asdfasd {ex.Message}");
+                            }
+
                         }
                     }
                     else
@@ -311,32 +368,40 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        float goal = 0.0f;
-        //Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
-        if (BoardWeight.x > BoardWeight.y)
-        {
-            goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 0.5f;
-            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
-        }
-        else if (BoardWeight.x < BoardWeight.y)
-        {
-            goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -0.5f;
 
-            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
-        }
-
-        rotationData.Goal = goal;
+        int maxDifference = (int)(BoardWeight.x + BoardWeight.y / 5);
+        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 2;
         rotationData.Moving = true;
-        rotationData.PassedGoalCount = 0;
-        
 
-        rotationData.SetMod();
+        //float goal = 0.0f;
+        ////Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
+        //if (BoardWeight.x > BoardWeight.y)
+        //{
+        //    goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 0.5f;
+        //    rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
+        //}
+        //else if (BoardWeight.x < BoardWeight.y)
+        //{
+        //    goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -0.5f;
+
+        //    rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
+        //}
+
+        //rotationData.Goal = goal;
+        //rotationData.Moving = true;
+        //rotationData.PassedGoalCount = 0;
 
 
-        if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
+        //rotationData.SetMod();
+        if (Math.Abs(BoardWeight.x - BoardWeight.y) > maxDifference)
         {
             GameOver();
         }
+
+        //if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
+        //{
+        //    GameOver();
+        //}
     }
 
     public void Set(Piece piece)
