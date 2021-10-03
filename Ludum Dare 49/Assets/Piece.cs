@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -13,20 +14,66 @@ public class Piece : MonoBehaviour
 
     private float stepTime;
     private float lockTime;
+    private int level;
 
-    public void Initialize(Board board, Vector3Int position, TetrominoData data)
+    public Dictionary<int, float> stepDelayPerLevel = new Dictionary<int, float>
+    {
+        { 1, 0.8f },
+        { 2, 0.7166666666666667f },
+        { 3, 0.6333333333333333f },
+        { 4, 0.55f },
+        { 5, 0.4666666666666667f },
+        { 6, 0.3833333333333333f },
+        { 7, 0.3f },
+        { 8, 0.2166666666666667f },
+        { 9, 0.1333333333333333f },
+        { 10, 0.1f },
+        { 11, 0.0833333333333333f },
+        { 12, 0.0833333333333333f },
+        { 13, 0.0833333333333333f },
+        { 14, 0.0666666666666667f },
+        { 15, 0.0666666666666667f },
+        { 16, 0.0666666666666667f },
+        { 17, 0.05f },
+        { 18, 0.05f },
+        { 19, 0.05f },
+        { 20, 0.0333333333333333f },
+        { 21, 0.0333333333333333f },
+        { 22, 0.0333333333333333f },
+        { 23, 0.0333333333333333f },
+        { 24, 0.0333333333333333f },
+        { 25, 0.0333333333333333f },
+        { 26, 0.0333333333333333f },
+        { 27, 0.0333333333333333f },
+        { 28, 0.0333333333333333f },
+        { 29, 0.0333333333333333f },
+        { 30, 0.0166666666666667f },
+    };
+
+    public void Initialize(Board board, Vector3Int position, TetrominoData data, int currentGameLevel)
     {
         RotationIndex = 0;
         Board = board;
         Data = data;
         Position = position;
-        stepTime = Time.time + stepDelay;
         lockTime = 0f;
-        
+        level = currentGameLevel;
+        SetStepTime();
         for (int i = 0; i < data.Cells.Length; i++)
         {
             Cells[i] = (Vector3Int)data.Cells[i];
         }
+    }
+
+    public void SetStepTime()
+    {
+        if (level > stepDelayPerLevel.Count)
+        {
+            level = stepDelayPerLevel.Count;
+        }
+
+
+        stepTime = Time.time + stepDelayPerLevel[level];
     }
 
     public bool HasTile(Vector3Int position)
@@ -59,6 +106,7 @@ public class Piece : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 Move(Vector2Int.left);
+                SetStepTime();
             }
             else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
             {
@@ -96,7 +144,7 @@ public class Piece : MonoBehaviour
 
     private void Step()
     {
-        stepTime = Time.time + stepDelay;
+        SetStepTime();
         Move(Vector2Int.down, true);
         if (lockTime >= lockDelay)
         {

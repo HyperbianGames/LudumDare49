@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlatformRotationData
@@ -48,6 +49,9 @@ public class Board : MonoBehaviour
     public GameObject GridCube;
     public GameObject Platform;
     public SoundDesigner SoundDesign;
+    public GameObject LevelLabel;
+    public GameObject ScoreLable;
+
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
     public Vector3Int SpawnPosition;
@@ -60,6 +64,17 @@ public class Board : MonoBehaviour
     public float GameEndTime { get; set; } = 0;
     public float GameEndTimePopup;
     private PlatformRotationData rotationData = new PlatformRotationData();
+    private int currentLevel = 1;
+    private int currentScore = 0;
+    private int numberOfRowsCleared = 0;
+    private Dictionary<int, int> lineClearMods = new Dictionary<int, int>
+    {
+        { 0, 0 },
+        { 1, 1 },
+        { 2, 2 },
+        { 3, 4 },
+        { 4, 8 },
+    };
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
@@ -133,6 +148,12 @@ public class Board : MonoBehaviour
         }
     }
 
+    public void LateUpdate()
+    {
+        LevelLabel.GetComponent<TextMeshProUGUI>().SetText(currentLevel.ToString());
+        ScoreLable.GetComponent<TextMeshProUGUI>().SetText(currentScore.ToString());
+    }
+
     public void GameStart()
     {
         MainMenuUI.SetActive(false);
@@ -144,6 +165,8 @@ public class Board : MonoBehaviour
         SpawnPiece();
         SoundDesign.BeingLevelTheme(1);
         SoundDesign.PlayOptionSelected();
+        currentLevel = 1;
+        currentScore = 0;
     }
 
     public Queue<Tetromino> DrawList { get; set; } = new Queue<Tetromino>();
@@ -181,7 +204,7 @@ public class Board : MonoBehaviour
     {
         int random = (int)GetNextPiece();
         TetrominoData data = tetrominoes[random];
-        ActivePiece.Initialize(this, SpawnPosition, data);
+        ActivePiece.Initialize(this, SpawnPosition, data, currentLevel);
 
         if (IsValidPosition(ActivePiece, SpawnPosition))
         {
@@ -569,6 +592,8 @@ public class Board : MonoBehaviour
 
     public void LineClear(int row)
     {
+        
+        
         for (int col = 1; col <= GridSize.x; col++)
         {
             Vector3Int pos = new Vector3Int(col, row, 0);
@@ -590,10 +615,18 @@ public class Board : MonoBehaviour
     public void ClearLines()
     {
         int row = 1;
+        int linesCleared = 0;
         while (row <= GridSize.y)
         {
             if (IsLineFull(row))
             {
+                linesCleared++;
+                numberOfRowsCleared++;
+                if (numberOfRowsCleared == 10)
+                {
+                    currentLevel++;
+                }
+
                 LineClear(row);
             }
             else
@@ -601,6 +634,8 @@ public class Board : MonoBehaviour
                 row++;
             }
         }
+
+        currentScore += lineClearMods[linesCleared] * 1000;
     }
 
     private bool IsLineFull(int row)
