@@ -153,7 +153,6 @@ public class Board : MonoBehaviour
 
         GameActive = false;
         SoundDesign.BeginLoseTheme();
-        SoundDesign.PlayOptionSelected();
     }
 
     public void ResetBoard()
