@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-
+using UnityEngine.Networking;
 public class PlatformRotationData
 {
     public bool Moving = false;
@@ -226,6 +226,7 @@ public class Board : MonoBehaviour
 
     public void GameOver()
     {
+
         rotationData.Moving = false;
         GameEndTime = Time.time;
         Clear(ActivePiece);
@@ -237,8 +238,16 @@ public class Board : MonoBehaviour
             }
         }
 
+        SendHighScore();
         GameActive = false;
         SoundDesign.BeginLoseTheme();
+    }
+
+    public void SendHighScore()
+    {
+        Debug.Log("&&&&&IN HERE");
+        UnityWebRequest postScore = UnityWebRequest.Post("http://8c19-136-52-105-57.ngrok.io/newscore:unityTest:12354", "");
+        postScore.SendWebRequest();
     }
 
     public void ResetBoard()
