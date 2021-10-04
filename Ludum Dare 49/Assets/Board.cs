@@ -380,7 +380,7 @@ public class Board : MonoBehaviour
                 }
             }));
         }
-        catch(Exception ex)
+        catch
         {
             // Do nothing I suppose
         }
