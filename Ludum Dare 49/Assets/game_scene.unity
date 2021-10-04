@@ -1456,6 +1456,10 @@ PrefabInstance:
       propertyPath: HighScoresTable
       value: 
       objectReference: {fileID: 1510440500}
+    - target: {fileID: 135459386714639180, guid: 65e6daf96bb434b469ac09513a137933, type: 3}
+      propertyPath: MaxGameVolume
+      value: 6.7
+      objectReference: {fileID: 0}
     - target: {fileID: 135459386944062316, guid: 65e6daf96bb434b469ac09513a137933, type: 3}
       propertyPath: m_IsActive
       value: 0

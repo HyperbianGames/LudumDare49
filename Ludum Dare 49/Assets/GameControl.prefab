@@ -1397,11 +1397,11 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: dad2b31fa1dcef64291395c631768cee, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: MaxGameVolume
-      value: 25.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: FadeOutDuration
-      value: 5.35
+      value: 5.08
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.size

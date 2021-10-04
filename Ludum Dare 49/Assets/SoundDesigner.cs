@@ -15,7 +15,7 @@ public class LevelSoundDesign
 public struct InputSoundDesign
 {
     public AudioClip EffectSound;
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 1f)]
     public float EffectVolumne;
 }
 
@@ -24,7 +24,7 @@ public struct HardDropSoundDesign
 {
     public Tetromino Shape;    
     public AudioClip EffectSound;
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 1f)]
     public float EffectVolumne;
 }
 
@@ -42,10 +42,10 @@ public class SoundDesigner : MonoBehaviour
     public AudioClip YouLoseTheme;
 
     public AudioClip MainMenuItemHovered;
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 1f)]
     public float ItemHoveredVolume;
     public AudioClip MainMenuItemSelected;
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 1f)]
     public float ItemSelectedVolume;
 
     public LevelSoundDesign[] LevelSoundDesigns;
@@ -53,7 +53,7 @@ public class SoundDesigner : MonoBehaviour
 
     public HardDropSoundDesign[] HardDropSounds;
 
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 1f)]
     public float MaxGameVolume;
     public AudioSource MainThemeSource { get; set; }
     public AudioSource LoseThemeSource { get; set; }
@@ -76,7 +76,7 @@ public class SoundDesigner : MonoBehaviour
         Instance = this;
         MainThemeSource = gameObject.AddComponent<AudioSource>();
         MainThemeSource.clip = MainMenuTheme;
-        MainThemeSource.volume = MaxGameVolume;
+        MainThemeSource.volume = clampLow(MaxGameVolume);
         MainThemeSource.Play();
 
 
@@ -111,7 +111,7 @@ public class SoundDesigner : MonoBehaviour
         MainThemeSource.Play();
         MainThemeSource.loop = true;
 
-        StartCoroutine(FadeAudioSource.StartFade(MainThemeSource, FadeInDuration, MaxGameVolume, FadeOutDuration));
+        StartCoroutine(FadeAudioSource.StartFade(MainThemeSource, FadeInDuration, clampLow(MaxGameVolume), FadeOutDuration));
     }
 
     public void BeginLoseTheme()
@@ -137,7 +137,7 @@ public class SoundDesigner : MonoBehaviour
         LoseThemeSource.Play();
         LoseThemeSource.loop = true;
 
-        StartCoroutine(FadeAudioSource.StartFade(LoseThemeSource, FadeInDuration, MaxGameVolume, FadeOutDuration));
+        StartCoroutine(FadeAudioSource.StartFade(LoseThemeSource, FadeInDuration, clampLow(MaxGameVolume), FadeOutDuration));
     }
 
     public void BeingLevelTheme(int level)
@@ -187,7 +187,7 @@ public class SoundDesigner : MonoBehaviour
             }
         }
         currentLevelSoundDesign = LevelSoundDesigns[levelMusicIndex - 1];
-        StartCoroutine(FadeAudioSource.StartFade(levelAudioSources[level], FadeInDuration, MaxGameVolume, FadeOutDuration));
+        StartCoroutine(FadeAudioSource.StartFade(levelAudioSources[level], FadeInDuration, clampLow(MaxGameVolume), FadeOutDuration));
 
         currentlyPlayingLevel = level;
     }
@@ -259,5 +259,10 @@ public class SoundDesigner : MonoBehaviour
         {
             return min + (input - min) % (max - -min);
         }
+    }
+
+    private float clampLow(float thisVolume)
+    {
+        return Mathf.Min(thisVolume, 0.16f);
     }
 }
