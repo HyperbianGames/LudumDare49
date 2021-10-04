@@ -142,6 +142,7 @@ public class Piece : MonoBehaviour
             if (Board != null && !Board.MainMenuUI.activeSelf && Board.GameEndTime + Board.GameEndTimePopup < Time.time)
             {
                 Board.GameOverUI.SetActive(true);
+                Board.MainMenuUI.SetActive(true);
 
                 if (Input.GetKeyDown(KeyCode.Return))
                 {

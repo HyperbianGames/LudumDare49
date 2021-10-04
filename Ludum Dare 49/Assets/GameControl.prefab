@@ -1755,6 +1755,10 @@ PrefabInstance:
       propertyPath: PostHighScoreButton
       value: 
       objectReference: {fileID: 6226026250195849660}
+    - target: {fileID: 7444024855983254277, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
+      propertyPath: tetrominoes.Array.data[7].Block
+      value: 
+      objectReference: {fileID: 3763278994304717382, guid: 63c22506e4e260f438af2d388d6e50f2, type: 3}
     - target: {fileID: 7444024855983254299, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: m_Name
       value: Game

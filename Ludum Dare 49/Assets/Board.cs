@@ -225,6 +225,7 @@ public class Board : MonoBehaviour
         currentScore = 0;
         isSentScore = false;
         PostHighScoreButton.SetActive(true);
+        GameOverUI.SetActive(false);
     }
 
     public Queue<Tetromino> DrawList { get; set; } = new Queue<Tetromino>();
@@ -394,6 +395,7 @@ public class Board : MonoBehaviour
     {
         using (UnityWebRequest request = UnityWebRequest.Get(uri))
         {
+            
             yield return request.SendWebRequest();
             callback(request);
         }      
