@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,6 +40,44 @@ public class PlatformRotationData
     }
 }
 
+public class Score
+{
+    public string score;
+    public string name;
+
+    public Score(string thisScore, string thisName)
+    {
+        score = thisScore;
+        name = thisName;
+    }
+
+    public static List<Score> ParseRaw(string rawText)
+    {
+        List<Score> scores = new List<Score>();
+        string[] charsToRemove = new string[] { "{", "}", "\n", "\"" };
+
+        foreach (string c in charsToRemove)
+        {
+            rawText = rawText.Replace(c, string.Empty);
+        }
+
+        string[] lines = rawText.Split(',');
+
+        foreach (string line in lines)
+        {
+            if (!line.Contains(":"))
+                continue;
+
+            Debug.Log(line);
+            string[] piece = line.Split(':');
+            scores.Add(new Score(piece[1], piece[0]));
+        }
+
+        return scores;
+    }
+}
+
+
 public class Board : MonoBehaviour
 {
     public TetrominoData[] tetrominoes;
@@ -72,6 +111,7 @@ public class Board : MonoBehaviour
     private int currentLevel = 1;
     private int currentScore = 0;
     private int numberOfRowsCleared = 0;
+    private bool isSentScore = false;
     private Dictionary<int, int> lineClearMods = new Dictionary<int, int>
     {
         { 0, 0 },
@@ -80,6 +120,10 @@ public class Board : MonoBehaviour
         { 3, 4 },
         { 4, 8 },
     };
+
+    public GameObject HighScoresTable;
+    public GameObject PlayerInput;
+    public GameObject PostHighScoreButton;
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
 
@@ -177,6 +221,8 @@ public class Board : MonoBehaviour
         savePiece = Tetromino.Ghost;
         currentLevel = StartingLevel;
         currentScore = 0;
+        isSentScore = false;
+        PostHighScoreButton.SetActive(true);
     }
 
     public Queue<Tetromino> DrawList { get; set; } = new Queue<Tetromino>();
@@ -253,7 +299,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    internal void GoToMenu()
+    public void GoToMenu()
     {
         GameOverUI.SetActive(false);
         MainMenuUI.SetActive(true);
@@ -275,16 +321,76 @@ public class Board : MonoBehaviour
             }
         }
 
-        SendHighScore();
+        GetHighScores();
         GameActive = false;
         SoundDesign.BeginLoseTheme();
     }
 
     public void SendHighScore()
     {
-        Debug.Log("&&&&&IN HERE");
-        UnityWebRequest postScore = UnityWebRequest.Post("http://8c19-136-52-105-57.ngrok.io/newscore:unityTest:12354", "");
-        postScore.SendWebRequest();
+        if (isSentScore)
+            return;
+
+        try
+        {
+            string name = PlayerInput.GetComponent<TMP_InputField>().text;
+            PostHighScoreButton.SetActive(false);
+
+            UnityWebRequest postScore = UnityWebRequest.Post($"http://8c19-136-52-105-57.ngrok.io/newscore:{name}:{currentScore}", "");
+            postScore.SendWebRequest();
+            isSentScore = true;
+            StartCoroutine(RefreshScores());
+        }
+        catch(Exception ex)
+        {
+            Debug.Log(ex);
+        }
+    }
+
+    IEnumerator RefreshScores()
+    {
+        yield return new WaitForSeconds(1);
+        GetHighScores();
+    }
+
+    public void GetHighScores()
+    {
+        string highscores = "";
+
+        try
+        {
+            StartCoroutine(GetRequest("http://8c19-136-52-105-57.ngrok.io/getscores", (UnityWebRequest req) =>
+            {
+                if (req.result == UnityWebRequest.Result.ConnectionError || req.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.Log($"{req.error}: {req.downloadHandler.text}");
+                }
+                else
+                {
+                    List<Score> scores = Score.ParseRaw(req.downloadHandler.text);
+
+                    foreach (Score score in scores)
+                    {
+                        highscores += $"{score.name}: {score.score}\n";
+                    }
+
+                    HighScoresTable.GetComponent<TextMeshProUGUI>().text = highscores;
+                }
+            }));
+        }
+        catch(Exception ex)
+        {
+            // Do nothing I suppose
+        }
+    }
+
+    IEnumerator GetRequest(string uri, Action<UnityWebRequest> callback)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
+            callback(request);
+        }      
     }
 
     public void ResetBoard()
@@ -758,3 +864,4 @@ public class Board : MonoBehaviour
         return true;
     }
 }
+

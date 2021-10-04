@@ -143,7 +143,7 @@ public class Piece : MonoBehaviour
             {
                 Board.GameOverUI.SetActive(true);
 
-                if (Input.anyKey)
+                if (Input.GetKeyDown(KeyCode.Return))
                 {
                     Board.GoToMenu();
                 }
