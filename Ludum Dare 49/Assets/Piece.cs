@@ -15,6 +15,7 @@ public class Piece : MonoBehaviour
     private float stepTime;
     private float lockTime;
     private int level;
+    private bool hasBeenLocked = true;
 
     public Dictionary<int, float> stepDelayPerLevel = new Dictionary<int, float>
     {
@@ -89,7 +90,7 @@ public class Piece : MonoBehaviour
 
     private void Update()
     {
-        if (Board.GameActive && !Board.MainMenuUI.activeSelf)
+        if (Board != null && Board.GameActive && !Board.MainMenuUI.activeSelf)
         {
             Board.Clear(this);
             lockTime += Time.deltaTime;
@@ -120,6 +121,14 @@ public class Piece : MonoBehaviour
             {
                 Move(Vector2Int.down);
             }
+            else if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                if (hasBeenLocked)
+                {
+                    hasBeenLocked = false;
+                    Board.SpawnPiece(true);
+                }                
+            }
 
             if (Time.time >= stepTime)
             {
@@ -130,7 +139,7 @@ public class Piece : MonoBehaviour
         }
         else
         {
-            if (!Board.MainMenuUI.activeSelf && Board.GameEndTime + Board.GameEndTimePopup < Time.time)
+            if (Board != null && !Board.MainMenuUI.activeSelf && Board.GameEndTime + Board.GameEndTimePopup < Time.time)
             {
                 Board.GameOverUI.SetActive(true);
 
@@ -155,6 +164,7 @@ public class Piece : MonoBehaviour
 
     private void Lock()
     {
+        hasBeenLocked = true;
         Board.Set(this);
         Board.ClearLines();
         Board.SpawnPiece();
