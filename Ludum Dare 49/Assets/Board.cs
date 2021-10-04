@@ -488,7 +488,7 @@ public class Board : MonoBehaviour
         //rotationData.SetMod();
 
 
-        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -5 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 5)
+        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -6 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 6)
             GameOver();
 
         //if (Math.Abs(BoardWeight.x - BoardWeight.y) > maxDifference)
