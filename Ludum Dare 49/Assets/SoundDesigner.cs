@@ -7,10 +7,7 @@ public class LevelSoundDesign
 {
     public AudioClip[] BackgroundTracks;
     public bool PlayRandomInputSounds;
-    public InputSoundDesign[] InputSounds;    
-
-    public HardDropSoundDesign[] HardDropSounds;
-
+    public InputSoundDesign[] InputSounds; 
     public int InputSoundIndex { get; set; } = 0;
 }
 
@@ -53,6 +50,8 @@ public class SoundDesigner : MonoBehaviour
 
     public LevelSoundDesign[] LevelSoundDesigns;
     private LevelSoundDesign currentLevelSoundDesign;
+
+    public HardDropSoundDesign[] HardDropSounds;
 
     [Range(0.0f, 100f)]
     public float MaxGameVolume;
@@ -233,19 +232,19 @@ public class SoundDesigner : MonoBehaviour
 
     public void PlayHardDropEffect(Tetromino shapeToPlay)
     {
-        if (currentLevelSoundDesign.HardDropSounds.Length > 0)
+        if (HardDropSounds.Length > 0)
         {
-            for (int soundIndex = 0; soundIndex < currentLevelSoundDesign.HardDropSounds.Length; soundIndex++)
+            for (int soundIndex = 0; soundIndex < HardDropSounds.Length; soundIndex++)
             {
-                if (currentLevelSoundDesign.HardDropSounds[soundIndex].Shape == shapeToPlay)
+                if (HardDropSounds[soundIndex].Shape == shapeToPlay)
                 {
-                    AudioSource.PlayClipAtPoint(currentLevelSoundDesign.HardDropSounds[soundIndex].EffectSound, new Vector3(), currentLevelSoundDesign.HardDropSounds[soundIndex].EffectVolumne);
+                    AudioSource.PlayClipAtPoint(HardDropSounds[soundIndex].EffectSound, new Vector3(), HardDropSounds[soundIndex].EffectVolumne);
                     return;
                 }
 
                 // The shape we asked to play didn't exist, so we are going to play a random sound
-                int randomIndex = Random.Range(0, currentLevelSoundDesign.HardDropSounds.Length - 1);
-                AudioSource.PlayClipAtPoint(currentLevelSoundDesign.HardDropSounds[randomIndex].EffectSound, new Vector3(), currentLevelSoundDesign.HardDropSounds[randomIndex].EffectVolumne);
+                int randomIndex = Random.Range(0, HardDropSounds.Length - 1);
+                AudioSource.PlayClipAtPoint(HardDropSounds[randomIndex].EffectSound, new Vector3(), HardDropSounds[randomIndex].EffectVolumne);
             }
         }
     }

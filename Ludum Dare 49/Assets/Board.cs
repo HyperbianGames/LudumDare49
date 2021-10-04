@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
+
 public class PlatformRotationData
 {
     public bool Moving = false;
@@ -409,6 +411,16 @@ public class Board : MonoBehaviour
         ManagePlatformRotation();
     }
 
+    public void Credits()
+    {
+        SceneManager.LoadScene("credits", LoadSceneMode.Single);
+    }
+
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
     private void ManagePlatformRotation()
     {
         if (rotationData.Moving)
@@ -435,7 +447,7 @@ public class Board : MonoBehaviour
                 }
             }
 
-            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -6 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 6)
+            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -8 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 8)
                 GameOver();
 
             //if (rotationData.Goal >= 0)
@@ -581,7 +593,7 @@ public class Board : MonoBehaviour
         }
 
         int maxDifference = Mathf.Clamp((int)(BoardWeight.x + BoardWeight.y / 5), 15, 35);
-        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 2.5f;
+        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 3f;
         rotationData.Moving = true;
 
         //float goal = 0.0f;

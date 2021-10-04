@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.000084562256, g: 0.00031824358, b: 0.00008404629, a: 1}
+  m_IndirectSpecularColor: {r: 0.000067757996, g: 0.00031991102, b: 0.00006739058, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1188,6 +1188,7 @@ GameObject:
   - component: {fileID: 2070796933}
   - component: {fileID: 2070796932}
   - component: {fileID: 2070796936}
+  - component: {fileID: 2070796937}
   m_Layer: 0
   m_Name: PressAnyButton
   m_TagString: Untagged
@@ -1291,3 +1292,15 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &2070796937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070796931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 205a170adc837b7468d1f55765e2e2bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
