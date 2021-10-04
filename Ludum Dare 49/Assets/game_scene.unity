@@ -1401,6 +1401,9 @@ PrefabInstance:
     - target: {fileID: 135459386041618270, guid: 65e6daf96bb434b469ac09513a137933, type: 3}
       propertyPath: m_Color.r
       value: 1
+    - target: {fileID: 135459386714639177, guid: 65e6daf96bb434b469ac09513a137933, type: 3}
+      propertyPath: GridSize.x
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 135459386944062316, guid: 65e6daf96bb434b469ac09513a137933, type: 3}
       propertyPath: m_IsActive

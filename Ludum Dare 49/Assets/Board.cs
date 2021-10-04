@@ -51,6 +51,11 @@ public class Board : MonoBehaviour
     public SoundDesigner SoundDesign;
     public GameObject LevelLabel;
     public GameObject ScoreLable;
+    public int StartingLevel = 1;
+    private Tetromino savePiece = Tetromino.Ghost;
+    private Tetromino nextPiece;
+    private GameObject[] savedPieceCells = new GameObject[4];
+    private GameObject[] nextPieceCells = new GameObject[4];
 
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
@@ -117,7 +122,9 @@ public class Board : MonoBehaviour
             ObjectGrid.Add(x, new Dictionary<int, Tuple<Tetromino, GameObject>>());
         }
 
-        SpawnPiece();
+        //nextPiece = GetNextPiece();
+        //SetNextPiece(nextPiece);
+        //SpawnPiece();
     }
 
     public void GenerateWeightMods()
@@ -162,10 +169,13 @@ public class Board : MonoBehaviour
         rotationData = new PlatformRotationData();
         ResetBoard();
         GameActive = true;
+        nextPiece = GetNextPiece();
+        SetNextPiece(nextPiece);
         SpawnPiece();
         SoundDesign.BeingLevelTheme(1);
         SoundDesign.PlayOptionSelected();
-        currentLevel = 1;
+        savePiece = Tetromino.Ghost;
+        currentLevel = StartingLevel;
         currentScore = 0;
     }
 
@@ -200,11 +210,38 @@ public class Board : MonoBehaviour
         return nextPiece;
     }
 
-    public void SpawnPiece()
+    public void SpawnPiece(bool swapWithSavedPiece = false)
     {
-        int random = (int)GetNextPiece();
-        TetrominoData data = tetrominoes[random];
-        ActivePiece.Initialize(this, SpawnPosition, data, currentLevel);
+        if (swapWithSavedPiece)
+        {
+            Tetromino savedPiece = savePiece;
+            if (savedPiece == Tetromino.Ghost)
+            {
+                savePiece = ActivePiece.Data.Tetromino;
+                ActivePiece.Initialize(this, SpawnPosition, tetrominoes[(int)GetNextPiece()], currentLevel);
+            }
+            else
+            {
+                ClearSavedPiece(savedPiece);
+                savePiece = ActivePiece.Data.Tetromino;
+                
+       
+                ActivePiece.Initialize(this, SpawnPosition, tetrominoes[(int)savedPiece], currentLevel);
+            }
+
+            SetSavedPiece(savePiece);
+        }
+        else
+        {
+            int currentNextPiece = (int)nextPiece;
+            ClearNextPiece(nextPiece);
+            nextPiece = GetNextPiece();
+            SetNextPiece(nextPiece);
+            TetrominoData data = tetrominoes[currentNextPiece];
+            ActivePiece.Initialize(this, SpawnPosition, data, currentLevel);
+        }
+        
+        
 
         if (IsValidPosition(ActivePiece, SpawnPosition))
         {
@@ -228,6 +265,7 @@ public class Board : MonoBehaviour
         rotationData.Moving = false;
         GameEndTime = Time.time;
         Clear(ActivePiece);
+        ClearNextPiece(nextPiece);
         for (int x = GridSize.x; x > 0; x--)
         {
             for (int y = GridSize.y; y > 0; y--)
@@ -424,8 +462,8 @@ public class Board : MonoBehaviour
             }
         }
 
-        int maxDifference = Mathf.Clamp((int)(BoardWeight.x + BoardWeight.y / 5), 20, 40);
-        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 3;
+        int maxDifference = Mathf.Clamp((int)(BoardWeight.x + BoardWeight.y / 5), 15, 35);
+        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 2.5f;
         rotationData.Moving = true;
 
         //float goal = 0.0f;
@@ -448,10 +486,15 @@ public class Board : MonoBehaviour
 
 
         //rotationData.SetMod();
-        if (Math.Abs(BoardWeight.x - BoardWeight.y) > maxDifference)
-        {
+
+
+        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -6 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 6)
             GameOver();
-        }
+
+        //if (Math.Abs(BoardWeight.x - BoardWeight.y) > maxDifference)
+        //{
+        //    GameOver();
+        //}
 
         //if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
         //{
@@ -466,6 +509,60 @@ public class Board : MonoBehaviour
             Vector3Int tilePosition = piece.Cells[i] + piece.Position;
 
             SetBlock(tilePosition, piece.Data.Tetromino);
+        }
+    }
+   
+    public void ClearSavedPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < savedPieceCells.Length; i++)
+        {
+            GameObject obj = savedPieceCells[i];
+            obj.transform.localPosition = poolObjectLocation;
+            TetrominoPool[tetrimino].Enqueue(obj);
+        }
+    }
+
+    public void SetSavedPiece(Tetromino tetrimino)
+    {        
+        for (int i = 0; i < savedPieceCells.Length; i++)
+        {
+            savedPieceCells[i] = TetrominoPool[tetrimino].Peek();
+            TetrominoPool[tetrimino].Dequeue();
+
+            Rigidbody rb = savedPieceCells[i].GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+            rb.velocity = new Vector3();
+
+            savedPieceCells[i].transform.localPosition = new Vector3(tetrominoes[(int)tetrimino].Cells[i].x - (GridSize.x /2) - 3, tetrominoes[(int)tetrimino].Cells[i].y + 1, SpawnPosition.z);
+        }
+    }
+
+    public void ClearNextPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < nextPieceCells.Length; i++)
+        {
+            GameObject obj = nextPieceCells[i];
+            obj.transform.localPosition = poolObjectLocation;
+            TetrominoPool[tetrimino].Enqueue(obj);
+        }
+    }
+
+    public void SetNextPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < nextPieceCells.Length; i++)
+        {
+            nextPieceCells[i] = TetrominoPool[tetrimino].Peek();
+            TetrominoPool[tetrimino].Dequeue();
+
+            Rigidbody rb = nextPieceCells[i].GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+            rb.velocity = new Vector3();
+
+            nextPieceCells[i].transform.localPosition = new Vector3(tetrominoes[(int)tetrimino].Cells[i].x + (GridSize.x / 2) + 4, tetrominoes[(int)tetrimino].Cells[i].y + 1, SpawnPosition.z);
         }
     }
 
