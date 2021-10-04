@@ -1397,7 +1397,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: dad2b31fa1dcef64291395c631768cee, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: MaxGameVolume
-      value: 34.9
+      value: 25.3
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: FadeOutDuration
@@ -1441,31 +1441,31 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: f92761f1de9b9bb4bba4312f9b63de14, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[0].EffectVolumne
-      value: 75.4
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[1].EffectVolumne
-      value: 77.2
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[2].EffectVolumne
-      value: 80.4
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[3].EffectVolumne
-      value: 78.1
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[4].EffectVolumne
-      value: 82.5
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[5].EffectVolumne
-      value: 85.4
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[6].EffectVolumne
-      value: 84.8
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[1].InputSounds.Array.size

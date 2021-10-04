@@ -310,7 +310,7 @@ public class Board : MonoBehaviour
 
     public void GameOver()
     {
-
+        ClearSavedPiece(savePiece);
         rotationData.Moving = false;
         GameEndTime = Time.time;
         Clear(ActivePiece);
