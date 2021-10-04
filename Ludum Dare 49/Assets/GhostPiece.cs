@@ -44,7 +44,7 @@ public class GhostPiece : MonoBehaviour
     {
         Vector3Int position = TrackingPiece.Position;
         int currentRow = position.y;
-        int bottom = 1;
+        int bottom = 0;
 
         Board.Clear(TrackingPiece);
 
