@@ -1397,11 +1397,19 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: dad2b31fa1dcef64291395c631768cee, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: MaxGameVolume
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: FadeOutDuration
       value: 5.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
+      propertyPath: ItemHoveredVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
+      propertyPath: ItemSelectedVolume
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.size
@@ -1441,31 +1449,31 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: f92761f1de9b9bb4bba4312f9b63de14, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[0].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[1].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[2].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[3].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[4].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[5].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: HardDropSounds.Array.data[6].EffectVolumne
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[1].InputSounds.Array.size
@@ -1617,35 +1625,35 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 22d64fae0fffcad47a02f296ee367f00, type: 3}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[0].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[1].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[2].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[3].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[4].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[5].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[6].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[7].InputSounds.Array.data[0].EffectVolumne
-      value: 15
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7444024855983254272, guid: 97f936d668d8fd245822149ac15b6dea, type: 3}
       propertyPath: LevelSoundDesigns.Array.data[0].HardDropSounds.Array.data[0].EffectSound

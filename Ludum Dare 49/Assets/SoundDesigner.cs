@@ -173,7 +173,7 @@ public class SoundDesigner : MonoBehaviour
         levelAudioSources[level].clip = LevelSoundDesigns[levelMusicIndex - 1].BackgroundTracks[0];
         levelAudioSources[level].Stop();
         levelAudioSources[level].Play();
-
+        levelAudioSources[level].volume = 0;
         //if (LevelSoundDesigns[levelMusicIndex - 1].BackgroundTracks.Length == 1)
         levelAudioSources[level].loop = (LevelSoundDesigns[levelMusicIndex - 1].BackgroundTracks.Length == 1);
 
