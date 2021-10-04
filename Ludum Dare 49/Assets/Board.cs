@@ -140,7 +140,7 @@ public class Board : MonoBehaviour
         {
             data.Initialize();
             TetrominoPool[data.Tetromino] = new Queue<GameObject>();
-            for (int i = 50; i > 0; i--)
+            for (int i = 100; i > 0; i--)
             {
                 GameObject newPoolObject = Instantiate(data.Block, poolObjectLocation, GridAnchor.transform.rotation, GridAnchor.transform);
                 TetrominoPool[data.Tetromino].Enqueue(newPoolObject);
@@ -380,7 +380,7 @@ public class Board : MonoBehaviour
                 }
             }));
         }
-        catch(Exception ex)
+        catch
         {
             // Do nothing I suppose
         }
@@ -451,7 +451,7 @@ public class Board : MonoBehaviour
                 }
             }
 
-            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -8 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 8)
+            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -7 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 7)
                 GameOver();
 
             //if (rotationData.Goal >= 0)
@@ -712,12 +712,12 @@ public class Board : MonoBehaviour
         }
 
         GameObject newBlock = TetrominoPool[tetrimino].Peek();
+        TetrominoPool[tetrimino].Dequeue();
         Rigidbody rb = newBlock.GetComponent<Rigidbody>();
         rb.isKinematic = true;
         rb.useGravity = false;
         rb.freezeRotation = true;
         rb.velocity = new Vector3();
-        TetrominoPool[tetrimino].Dequeue();
         ObjectGrid[position.x].Add(position.y, new Tuple<Tetromino, GameObject>(tetrimino, newBlock));
 
         newBlock.transform.localPosition = position + gridOffsetFromCenter;
