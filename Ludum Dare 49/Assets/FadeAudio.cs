@@ -10,7 +10,6 @@ public static class FadeAudioSource
         
         float currentTime = 0;
         float start = audioSource.volume;
-        Debug.Log("Fading 1");
         float delayStart = 0f;
         while (currentTime < duration)
         {

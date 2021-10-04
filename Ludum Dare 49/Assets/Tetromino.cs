@@ -9,6 +9,7 @@ public enum Tetromino
     L,
     S,
     Z,
+    Ghost,
 }
 
 [System.Serializable]
@@ -21,8 +22,11 @@ public class TetrominoData
 
     public void Initialize()
     {
-        this.Cells = GameData.Cells[this.Tetromino];
-        this.WallKicks = GameData.WallKicks[this.Tetromino];
+        if (Tetromino != Tetromino.Ghost)
+        {
+            this.Cells = GameData.Cells[this.Tetromino];
+            this.WallKicks = GameData.WallKicks[this.Tetromino];
+        }        
     }
 
 }

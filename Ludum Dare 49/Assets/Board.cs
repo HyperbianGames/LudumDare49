@@ -1,8 +1,10 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-
+using UnityEngine.Networking;
 public class PlatformRotationData
 {
     public bool Moving = false;
@@ -12,6 +14,7 @@ public class PlatformRotationData
     public bool DirectionGoingPositive = false;
     public float Speed = 2f;
     public int MaxWobbles = 4;
+    public int MaxWeightDifference = 0;
 
     public void SetMod()
     {
@@ -37,6 +40,44 @@ public class PlatformRotationData
     }
 }
 
+public class Score
+{
+    public string score;
+    public string name;
+
+    public Score(string thisScore, string thisName)
+    {
+        score = thisScore;
+        name = thisName;
+    }
+
+    public static List<Score> ParseRaw(string rawText)
+    {
+        List<Score> scores = new List<Score>();
+        string[] charsToRemove = new string[] { "{", "}", "\n", "\"" };
+
+        foreach (string c in charsToRemove)
+        {
+            rawText = rawText.Replace(c, string.Empty);
+        }
+
+        string[] lines = rawText.Split(',');
+
+        foreach (string line in lines)
+        {
+            if (!line.Contains(":"))
+                continue;
+
+            Debug.Log(line);
+            string[] piece = line.Split(':');
+            scores.Add(new Score(piece[1], piece[0]));
+        }
+
+        return scores;
+    }
+}
+
+
 public class Board : MonoBehaviour
 {
     public TetrominoData[] tetrominoes;
@@ -47,6 +88,14 @@ public class Board : MonoBehaviour
     public GameObject GridCube;
     public GameObject Platform;
     public SoundDesigner SoundDesign;
+    public GameObject LevelLabel;
+    public GameObject ScoreLable;
+    public int StartingLevel = 1;
+    private Tetromino savePiece = Tetromino.Ghost;
+    private Tetromino nextPiece;
+    private GameObject[] savedPieceCells = new GameObject[4];
+    private GameObject[] nextPieceCells = new GameObject[4];
+
     public Vector2Int GridSize;
     private readonly Vector3 poolObjectLocation = new Vector3(-100, 0, 0);
     public Vector3Int SpawnPosition;
@@ -59,13 +108,31 @@ public class Board : MonoBehaviour
     public float GameEndTime { get; set; } = 0;
     public float GameEndTimePopup;
     private PlatformRotationData rotationData = new PlatformRotationData();
+    private int currentLevel = 1;
+    private int currentScore = 0;
+    private int numberOfRowsCleared = 0;
+    private bool isSentScore = false;
+    private Dictionary<int, int> lineClearMods = new Dictionary<int, int>
+    {
+        { 0, 0 },
+        { 1, 1 },
+        { 2, 2 },
+        { 3, 4 },
+        { 4, 8 },
+    };
+
+    public GameObject HighScoresTable;
+    public GameObject PlayerInput;
+    public GameObject PostHighScoreButton;
 
     public Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>> ObjectGrid { get; set; } = new Dictionary<int, Dictionary<int, Tuple<Tetromino, GameObject>>>();
+
+    public Dictionary<int, int> WeightMods { get; set; } = new Dictionary<int, int>();
 
     private void Awake()
     {
         ActivePiece = GetComponentInChildren<Piece>();
-
+        GenerateWeightMods();
 
         foreach (TetrominoData data in tetrominoes)
         {
@@ -99,27 +166,128 @@ public class Board : MonoBehaviour
             ObjectGrid.Add(x, new Dictionary<int, Tuple<Tetromino, GameObject>>());
         }
 
-        SpawnPiece();
+        //nextPiece = GetNextPiece();
+        //SetNextPiece(nextPiece);
+        //SpawnPiece();
+    }
+
+    public void GenerateWeightMods()
+    {
+        int columsPerSide = (int)Mathf.Floor(GridSize.x / 2);
+        int midColumn = 0;
+        int columnMod = columsPerSide * -1;
+
+        if (GridSize.x % 2 != 0)
+        {
+            midColumn = columsPerSide + 1;
+        }
+
+        for (int col = 1; col <= GridSize.x; col++)
+        {
+            if (midColumn == col)
+            {
+                WeightMods.Add(col, 0);
+            }
+            else
+            {
+                int actualMod = columnMod < 0 ? columnMod * -1 : columnMod;                
+                WeightMods.Add(col, actualMod);
+                columnMod++;
+                if (columnMod == 0)
+                    columnMod++;
+            }
+        }
+    }
+
+    public void LateUpdate()
+    {
+        LevelLabel.GetComponent<TextMeshProUGUI>().SetText(currentLevel.ToString());
+        ScoreLable.GetComponent<TextMeshProUGUI>().SetText(currentScore.ToString());
     }
 
     public void GameStart()
     {
         MainMenuUI.SetActive(false);
-        ActivePiece.HardDrop();
-        Platform.transform.rotation = new Quaternion(0, 0, 0, 0);
+//ActivePiece.HardDrop();
+        GridAnchor.transform.rotation = new Quaternion(0, 0, 0, 0);
         rotationData = new PlatformRotationData();
         ResetBoard();
         GameActive = true;
+        nextPiece = GetNextPiece();
+        SetNextPiece(nextPiece);
         SpawnPiece();
         SoundDesign.BeingLevelTheme(1);
         SoundDesign.PlayOptionSelected();
+        savePiece = Tetromino.Ghost;
+        currentLevel = StartingLevel;
+        currentScore = 0;
+        isSentScore = false;
+        PostHighScoreButton.SetActive(true);
     }
 
-    public void SpawnPiece()
+    public Queue<Tetromino> DrawList { get; set; } = new Queue<Tetromino>();
+
+    public void ShuffleList()
     {
-        int random = UnityEngine.Random.Range(0, tetrominoes.Length);
-        TetrominoData data = tetrominoes[random];
-        ActivePiece.Initialize(this, SpawnPosition, data);
+        List<Tetromino> tetrominos = new List<Tetromino>();
+
+        for(int i = 0; i < tetrominoes.Length - 1; i++)
+        {
+            tetrominos.Add((Tetromino)i);
+            //tetrominos.Add((Tetromino)i);
+        }
+
+        System.Random rand = new System.Random();
+        while (tetrominos.Count > 0)
+        {
+            int index = rand.Next(tetrominos.Count);
+            DrawList.Enqueue(tetrominos[index]);
+            tetrominos.RemoveAt(index);
+        }
+    }
+
+    public Tetromino GetNextPiece()
+    {
+        if (DrawList.Count == 0)
+            ShuffleList();
+
+        Tetromino nextPiece = DrawList.Peek();
+        DrawList.Dequeue();
+        return nextPiece;
+    }
+
+    public void SpawnPiece(bool swapWithSavedPiece = false)
+    {
+        if (swapWithSavedPiece)
+        {
+            Tetromino savedPiece = savePiece;
+            if (savedPiece == Tetromino.Ghost)
+            {
+                savePiece = ActivePiece.Data.Tetromino;
+                ActivePiece.Initialize(this, SpawnPosition, tetrominoes[(int)GetNextPiece()], currentLevel);
+            }
+            else
+            {
+                ClearSavedPiece(savedPiece);
+                savePiece = ActivePiece.Data.Tetromino;
+                
+       
+                ActivePiece.Initialize(this, SpawnPosition, tetrominoes[(int)savedPiece], currentLevel);
+            }
+
+            SetSavedPiece(savePiece);
+        }
+        else
+        {
+            int currentNextPiece = (int)nextPiece;
+            ClearNextPiece(nextPiece);
+            nextPiece = GetNextPiece();
+            SetNextPiece(nextPiece);
+            TetrominoData data = tetrominoes[currentNextPiece];
+            ActivePiece.Initialize(this, SpawnPosition, data, currentLevel);
+        }
+        
+        
 
         if (IsValidPosition(ActivePiece, SpawnPosition))
         {
@@ -131,7 +299,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    internal void GoToMenu()
+    public void GoToMenu()
     {
         GameOverUI.SetActive(false);
         MainMenuUI.SetActive(true);
@@ -140,9 +308,11 @@ public class Board : MonoBehaviour
 
     public void GameOver()
     {
+
         rotationData.Moving = false;
         GameEndTime = Time.time;
         Clear(ActivePiece);
+        ClearNextPiece(nextPiece);
         for (int x = GridSize.x; x > 0; x--)
         {
             for (int y = GridSize.y; y > 0; y--)
@@ -151,8 +321,76 @@ public class Board : MonoBehaviour
             }
         }
 
+        GetHighScores();
         GameActive = false;
         SoundDesign.BeginLoseTheme();
+    }
+
+    public void SendHighScore()
+    {
+        if (isSentScore)
+            return;
+
+        try
+        {
+            string name = PlayerInput.GetComponent<TMP_InputField>().text;
+            PostHighScoreButton.SetActive(false);
+
+            UnityWebRequest postScore = UnityWebRequest.Post($"http://8c19-136-52-105-57.ngrok.io/newscore:{name}:{currentScore}", "");
+            postScore.SendWebRequest();
+            isSentScore = true;
+            StartCoroutine(RefreshScores());
+        }
+        catch(Exception ex)
+        {
+            Debug.Log(ex);
+        }
+    }
+
+    IEnumerator RefreshScores()
+    {
+        yield return new WaitForSeconds(1);
+        GetHighScores();
+    }
+
+    public void GetHighScores()
+    {
+        string highscores = "";
+
+        try
+        {
+            StartCoroutine(GetRequest("http://8c19-136-52-105-57.ngrok.io/getscores", (UnityWebRequest req) =>
+            {
+                if (req.result == UnityWebRequest.Result.ConnectionError || req.result == UnityWebRequest.Result.ProtocolError)
+                {
+                    Debug.Log($"{req.error}: {req.downloadHandler.text}");
+                }
+                else
+                {
+                    List<Score> scores = Score.ParseRaw(req.downloadHandler.text);
+
+                    foreach (Score score in scores)
+                    {
+                        highscores += $"{score.name}: {score.score}\n";
+                    }
+
+                    HighScoresTable.GetComponent<TextMeshProUGUI>().text = highscores;
+                }
+            }));
+        }
+        catch(Exception ex)
+        {
+            // Do nothing I suppose
+        }
+    }
+
+    IEnumerator GetRequest(string uri, Action<UnityWebRequest> callback)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(uri))
+        {
+            yield return request.SendWebRequest();
+            callback(request);
+        }      
     }
 
     public void ResetBoard()
@@ -175,91 +413,113 @@ public class Board : MonoBehaviour
     {
         if (rotationData.Moving)
         {
-            if (rotationData.Goal >= 0)
+            rotationData.Speed = Math.Abs((GridAnchor.transform.rotation.z * Mathf.Rad2Deg) - rotationData.Goal);
+
+
+            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal)
             {
-                if (rotationData.DirectionGoingPositive)
-                {
-                    Debug.Log("GOING POSITIVE - 1");
-                    GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
-                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
-                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal * rotationData.PassGoalMod)
-                    {
-                        rotationData.PassedGoalCount += 1;
-                        rotationData.DirectionGoingPositive = false;
-                        rotationData.SetMod();
-                    }
+                GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
 
-                    if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                    {
-                        rotationData.Moving = false;
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
-                    }
-                }
-                else
+                if (!(GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal))
                 {
-                    Debug.Log("GOING Negative - 1");
-                    GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
-                    Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
-                    if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal * rotationData.PassGoalMod)
-                    {
-                        rotationData.PassedGoalCount += 1;
-                        rotationData.DirectionGoingPositive = true;
-                        rotationData.SetMod();
-
-                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                        {
-                            rotationData.Moving = false;
-                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
-                        }
-                    }
+                    rotationData.PassedGoalCount++;
                 }
+            }
+            else if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal)
+            {
+                GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+
+                if (!(GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal))
+                {
+                    rotationData.PassedGoalCount++;
+                }
+            }
+            
+            //if (rotationData.Goal >= 0)
+            //{
+            //    if (rotationData.DirectionGoingPositive)
+            //    {
+            //        Debug.Log("GOING POSITIVE - 1");
+            //        GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+            //        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+            //        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal * rotationData.PassGoalMod)
+            //        {
+            //            rotationData.PassedGoalCount += 1;
+            //            rotationData.DirectionGoingPositive = false;
+            //            rotationData.SetMod();
+            //        }
+
+            //        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //        {
+            //            rotationData.Moving = false;
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        Debug.Log("GOING Negative - 1");
+            //        GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+            //        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal * rotationData.PassGoalMod}");
+            //        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal * rotationData.PassGoalMod)
+            //        {
+            //            rotationData.PassedGoalCount += 1;
+            //            rotationData.DirectionGoingPositive = true;
+            //            rotationData.SetMod();
+
+            //            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //            {
+            //                rotationData.Moving = false;
+            //                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+            //            }
+            //        }
+            //    }
                
 
-            }
-            else
-            {
-                if (rotationData.Goal < 0)
-                {
-                    if (rotationData.DirectionGoingPositive)
-                    {
-                        Debug.Log("GOING POSITIVE - 2");
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
-                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
-                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal / rotationData.PassGoalMod)
-                        {
-                            rotationData.PassedGoalCount += 1;
-                            rotationData.DirectionGoingPositive = false;
-                            rotationData.SetMod();
-                        }
+            //}
+            //else
+            //{
+            //    if (rotationData.Goal < 0)
+            //    {
+            //        if (rotationData.DirectionGoingPositive)
+            //        {
+            //            Debug.Log("GOING POSITIVE - 2");
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, Time.deltaTime * rotationData.Speed, Space.Self);
+            //            Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+            //            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal / rotationData.PassGoalMod)
+            //            {
+            //                rotationData.PassedGoalCount += 1;
+            //                rotationData.DirectionGoingPositive = false;
+            //                rotationData.SetMod();
+            //            }
 
-                        if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                        {
-                            rotationData.Moving = false;
-                            GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("GOING Negative - 2");
-                        GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
-                        Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
-                        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal / rotationData.PassGoalMod)
-                        {
-                            rotationData.PassedGoalCount += 1;
-                            rotationData.DirectionGoingPositive = true;
-                            rotationData.SetMod();
+            //            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //            {
+            //                rotationData.Moving = false;
+            //                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg + rotationData.Goal, Space.Self);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            Debug.Log("GOING Negative - 2");
+            //            GridAnchor.transform.Rotate(0.0f, 0.0f, -Time.deltaTime * rotationData.Speed, Space.Self);
+            //            Debug.Log($"Rotate current : {GridAnchor.transform.rotation.z * Mathf.Rad2Deg} goal : {rotationData.Goal / rotationData.PassGoalMod}");
+            //            if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal / rotationData.PassGoalMod)
+            //            {
+            //                rotationData.PassedGoalCount += 1;
+            //                rotationData.DirectionGoingPositive = true;
+            //                rotationData.SetMod();
 
-                            if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
-                            {
-                                rotationData.Moving = false;
-                                GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
-                            }
-                        }
-                    }
+            //                if (rotationData.PassedGoalCount > rotationData.MaxWobbles)
+            //                {
+            //                    rotationData.Moving = false;
+            //                    GridAnchor.transform.Rotate(0.0f, 0.0f, GridAnchor.transform.rotation.z * Mathf.Rad2Deg - rotationData.Goal, Space.Self);
+            //                }
+            //            }
+            //        }
 
 
-                }
-            }
+            //    }
+            //}
         }
         
         //else if (rotationData.Goal <= 0 && GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal)
@@ -271,23 +531,41 @@ public class Board : MonoBehaviour
 
     public void CalculateBoardWeight(Piece piece)
     {
-        BoardWeight = new Vector2(15, 15);
+        BoardWeight = new Vector2(30, 30);
+
         for (int x = GridSize.x; x > 0; x--)
         {
             for (int y = GridSize.y; y > 0; y--)
             {
                 Vector3Int position = new Vector3Int(x, y, SpawnPosition.z);
-                if (!piece.HasTile(position) & HasTile(position))
+                if (HasTile(position) && !piece.HasTile(position))
                 {
                     if (GridSize.x % 2 == 0)
                     {
                         if (x > GridSize.x / 2)
                         {
-                            BoardWeight.y += 1;
+                            try
+                            {
+                                BoardWeight.y += 1 * WeightMods[x];
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Log($"asdfasd {ex.Message}");
+                            }
+
                         }
                         else
                         {
-                            BoardWeight.x += 1;
+
+                            try
+                            {
+                                BoardWeight.x += 1 * WeightMods[x];
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.Log($"asdfasd {ex.Message}");
+                            }
+
                         }
                     }
                     else
@@ -298,32 +576,45 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        float goal = 0.0f;
-        //Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
-        if (BoardWeight.x > BoardWeight.y)
-        {
-            goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 0.5f;
-            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
-        }
-        else if (BoardWeight.x < BoardWeight.y)
-        {
-            goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -0.5f;
 
-            rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
-        }
-
-        rotationData.Goal = goal;
+        int maxDifference = Mathf.Clamp((int)(BoardWeight.x + BoardWeight.y / 5), 15, 35);
+        rotationData.Goal = (BoardWeight.x - BoardWeight.y) / 2.5f;
         rotationData.Moving = true;
-        rotationData.PassedGoalCount = 0;
-        
 
-        rotationData.SetMod();
+        //float goal = 0.0f;
+        ////Debug.Log($"Board Weight: {BoardWeight.x} | {BoardWeight.y} ");
+        //if (BoardWeight.x > BoardWeight.y)
+        //{
+        //    goal = ((BoardWeight.y * failMod) - BoardWeight.x) * 0.5f;
+        //    rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg > rotationData.Goal; ;
+        //}
+        //else if (BoardWeight.x < BoardWeight.y)
+        //{
+        //    goal = ((BoardWeight.x * failMod) - BoardWeight.y) * -0.5f;
+
+        //    rotationData.DirectionGoingPositive = GridAnchor.transform.rotation.z * Mathf.Rad2Deg < rotationData.Goal;
+        //}
+
+        //rotationData.Goal = goal;
+        //rotationData.Moving = true;
+        //rotationData.PassedGoalCount = 0;
 
 
-        if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
-        {
+        //rotationData.SetMod();
+
+
+        if (GridAnchor.transform.rotation.z * Mathf.Rad2Deg < -6 || GridAnchor.transform.rotation.z * Mathf.Rad2Deg > 6)
             GameOver();
-        }
+
+        //if (Math.Abs(BoardWeight.x - BoardWeight.y) > maxDifference)
+        //{
+        //    GameOver();
+        //}
+
+        //if ((BoardWeight.x > BoardWeight.y * failMod) || (BoardWeight.y > BoardWeight.x * failMod))
+        //{
+        //    GameOver();
+        //}
     }
 
     public void Set(Piece piece)
@@ -335,11 +626,68 @@ public class Board : MonoBehaviour
             SetBlock(tilePosition, piece.Data.Tetromino);
         }
     }
+   
+    public void ClearSavedPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < savedPieceCells.Length; i++)
+        {
+            GameObject obj = savedPieceCells[i];
+            obj.transform.localPosition = poolObjectLocation;
+            TetrominoPool[tetrimino].Enqueue(obj);
+        }
+    }
+
+    public void SetSavedPiece(Tetromino tetrimino)
+    {        
+        for (int i = 0; i < savedPieceCells.Length; i++)
+        {
+            savedPieceCells[i] = TetrominoPool[tetrimino].Peek();
+            TetrominoPool[tetrimino].Dequeue();
+
+            Rigidbody rb = savedPieceCells[i].GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+            rb.velocity = new Vector3();
+
+            savedPieceCells[i].transform.localPosition = new Vector3(tetrominoes[(int)tetrimino].Cells[i].x - (GridSize.x /2) - 3, tetrominoes[(int)tetrimino].Cells[i].y + 1, SpawnPosition.z);
+        }
+    }
+
+    public void ClearNextPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < nextPieceCells.Length; i++)
+        {
+            GameObject obj = nextPieceCells[i];
+            obj.transform.localPosition = poolObjectLocation;
+            TetrominoPool[tetrimino].Enqueue(obj);
+        }
+    }
+
+    public void SetNextPiece(Tetromino tetrimino)
+    {
+        for (int i = 0; i < nextPieceCells.Length; i++)
+        {
+            nextPieceCells[i] = TetrominoPool[tetrimino].Peek();
+            TetrominoPool[tetrimino].Dequeue();
+
+            Rigidbody rb = nextPieceCells[i].GetComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.freezeRotation = true;
+            rb.velocity = new Vector3();
+
+            nextPieceCells[i].transform.localPosition = new Vector3(tetrominoes[(int)tetrimino].Cells[i].x + (GridSize.x / 2) + 4, tetrominoes[(int)tetrimino].Cells[i].y + 1, SpawnPosition.z);
+        }
+    }
 
     public void SetBlock(Vector3Int position, Tetromino tetrimino)
     {
         if (ObjectGrid[position.x].ContainsKey(position.y))
         {
+            if (tetrimino == Tetromino.Ghost)
+                return;
+
             ObjectGrid[position.x][position.y].Item2.transform.localPosition = poolObjectLocation;
             TetrominoPool[ObjectGrid[position.x][position.y].Item1].Enqueue(ObjectGrid[position.x][position.y].Item2);
             ObjectGrid[position.x].Remove(position.y);
@@ -357,10 +705,13 @@ public class Board : MonoBehaviour
         newBlock.transform.localPosition = position + gridOffsetFromCenter;
     }
 
-    public void ClearBlock(Vector3Int position)
+    public void ClearBlock(Vector3Int position, bool isGhost = false)
     {
-        if (ObjectGrid[position.x].ContainsKey(position.y))
+        if (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y))
         {
+            if (isGhost && ObjectGrid[position.x][position.y].Item1 != Tetromino.Ghost)
+                return;
+            
             Rigidbody rb = ObjectGrid[position.x][position.y].Item2.GetComponent<Rigidbody>();
             rb.velocity = new Vector3();
             rb.isKinematic = true;
@@ -414,7 +765,7 @@ public class Board : MonoBehaviour
 
     public bool HasTile(Vector3Int position)
     {
-        return (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y));
+        return (ObjectGrid.ContainsKey(position.x) && ObjectGrid[position.x].ContainsKey(position.y) && ObjectGrid[position.x][position.y].Item1 != Tetromino.Ghost);
     }
 
     public void DrawGrid()
@@ -453,6 +804,8 @@ public class Board : MonoBehaviour
 
     public void LineClear(int row)
     {
+        
+        
         for (int col = 1; col <= GridSize.x; col++)
         {
             Vector3Int pos = new Vector3Int(col, row, 0);
@@ -474,10 +827,20 @@ public class Board : MonoBehaviour
     public void ClearLines()
     {
         int row = 1;
+        int linesCleared = 0;
         while (row <= GridSize.y)
         {
             if (IsLineFull(row))
             {
+                linesCleared++;
+                numberOfRowsCleared++;
+                if (numberOfRowsCleared == 10)
+                {
+                    currentLevel++;
+                    SoundDesign.BeingLevelTheme(currentLevel);
+                    numberOfRowsCleared = 0;
+                }
+
                 LineClear(row);
             }
             else
@@ -485,6 +848,8 @@ public class Board : MonoBehaviour
                 row++;
             }
         }
+
+        currentScore += lineClearMods[linesCleared] * 1000;
     }
 
     private bool IsLineFull(int row)
@@ -499,3 +864,4 @@ public class Board : MonoBehaviour
         return true;
     }
 }
+
