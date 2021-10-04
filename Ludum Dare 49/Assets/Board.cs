@@ -404,6 +404,10 @@ public class Board : MonoBehaviour
                 ClearBlock(new Vector3Int(x, y, SpawnPosition.z));
             }
         }
+        if (UnityEngine.Object.ReferenceEquals(nextPiece, null))
+        {
+            ClearNextPiece(nextPiece);
+        }
     }
 
     private void Update()
