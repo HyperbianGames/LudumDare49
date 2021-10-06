@@ -217,6 +217,7 @@ public class Board : MonoBehaviour
         GameActive = true;
         nextPiece = GetNextPiece();
         SetNextPiece(nextPiece);
+        ClearSavedPiece(savePiece);
         SpawnPiece();
         SoundDesign.BeingLevelTheme(1);
         SoundDesign.PlayOptionSelected();
@@ -653,11 +654,14 @@ public class Board : MonoBehaviour
    
     public void ClearSavedPiece(Tetromino tetrimino)
     {
-        for (int i = 0; i < savedPieceCells.Length; i++)
+        if (tetrimino != Tetromino.Ghost)
         {
-            GameObject obj = savedPieceCells[i];
-            obj.transform.localPosition = poolObjectLocation;
-            TetrominoPool[tetrimino].Enqueue(obj);
+            for (int i = 0; i < savedPieceCells.Length; i++)
+            {
+                GameObject obj = savedPieceCells[i];
+                obj.transform.localPosition = poolObjectLocation;
+                TetrominoPool[tetrimino].Enqueue(obj);
+            }
         }
     }
 
